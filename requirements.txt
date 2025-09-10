@@ -1,0 +1,5 @@
+appium-python-client
+pytest
+allure-python-commons
+python-dotenv
+selenium
