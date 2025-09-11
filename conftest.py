@@ -11,6 +11,8 @@ import re
 from core import waits
 from core.textfinder import TextFinder
 from screens.login_screen import LoginScreen
+from core.qr_generator import QrGenerator
+from core.device_media import push_png_via_driver
 
 BASE_DIR = Path(__file__).resolve().parent
 ENV_PATH = BASE_DIR / "config" / ".env"
@@ -95,3 +97,12 @@ def login(driver):
     login.geo_permission()
     login.online_duken()
     return login
+
+@pytest.fixture
+def qr_png_on_device(driver, request):
+    kind = getattr(request, "param", None)  # можно параметризовать через indirect
+    gen = QrGenerator()
+    # если тест параметризует kind напрямую, просто передай его
+    path = gen.png(kind or "megapolis")
+    device_path = push_png_via_driver(driver, path)   # /sdcard/Pictures/...
+    return {"name": path.stem, "local": path, "device": device_path}
