@@ -13,6 +13,7 @@ from core.textfinder import TextFinder
 from screens.login_screen import LoginScreen
 from core.qr_generator import QrGenerator
 from core.device_media import push_png_via_driver
+from core.gallery_cleaner import clean_gallery
 
 BASE_DIR = Path(__file__).resolve().parent
 ENV_PATH = BASE_DIR / "config" / ".env"
@@ -106,3 +107,14 @@ def qr_png_on_device(driver, request):
     path = gen.png(kind or "megapolis")
     device_path = push_png_via_driver(driver, path)   # /sdcard/Pictures/...
     return {"name": path.stem, "local": path, "device": device_path}
+
+@pytest.fixture
+def clean_gallery_before_test(driver):
+    """
+    Полная очистка галереи:
+      - Android: чистим /sdcard/DCIM и /sdcard/Pictures
+      - iOS симулятор: simctl erase (нужен UDID / booted)
+    """
+    ios_udid = os.getenv("IOS_SIM_UDID")  # задай в CI/локально, если нужна iOS
+    clean_gallery(driver, ios_udid=ios_udid, only_test_album=None)
+    yield
