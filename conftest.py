@@ -96,6 +96,7 @@ def login(driver):
     login.quik_pin_setup()
     login.quik_pin_setup()
     login.geo_permission()
+    login.more_menu()
     login.online_duken()
     return login
 

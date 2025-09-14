@@ -2,12 +2,37 @@ from typing import Optional
 from dataclasses import dataclass
 import time
 from appium.webdriver.common.appiumby import AppiumBy as By
+from selenium.common import WebDriverException
+
 
 
 @dataclass
 class Found:
     element: object   # WebElement
     context: str      # 'NATIVE_APP' или 'WEBVIEW_*'
+    driver: object         # WebDriver
+
+    def click(self):
+        orig = self.driver.current_context
+        if orig != self.context:
+            self.driver.switch_to.context(self.context)
+        try:
+            self.element.click()
+        except WebDriverException:
+            # клик по предку
+            try:
+                anc = self.element.find_element(By.XPATH, "./ancestor::*[@clickable='true'][1]")
+                anc.click()
+            except Exception:
+                # жест по центру
+                r = self.element.rect
+                self.driver.execute_script("mobile: clickGesture", {
+                    "x": int(r["x"] + r["width"] / 2),
+                    "y": int(r["y"] + r["height"] / 2)
+                })
+        finally:
+            if self.driver.current_context != orig:
+                self.driver.switch_to.context(orig)
 
 class TextFinder:
     def __init__(self, driver, waits, default_timeout: int = 10, poll: float = 0.5):
@@ -27,17 +52,17 @@ class TextFinder:
             # 1) Native
             if platform.startswith("android"):
                 el = self._find_native_android(text, slice_timeout)
-                if el: return Found(el, "NATIVE_APP")
+                if el: return Found(el, "NATIVE_APP", self.driver)
             elif platform.startswith("ios"):
                 el = self._find_native_ios(text, slice_timeout)
-                if el: return Found(el, "NATIVE_APP")
+                if el: return Found(el, "NATIVE_APP", self.driver)
             else:
                 el = self._find_native_android(text, slice_timeout) or self._find_native_ios(text, slice_timeout)
                 if el: return Found(el, "NATIVE_APP")
 
             # 2) WebView (вернёт (ctx, el) и оставит нас в этом ctx)
             ctx, el = self._find_in_webview(text, slice_timeout)
-            if el: return Found(el, ctx)
+            if el: return Found(el, ctx, self.driver)
 
             time.sleep(self.poll)
 

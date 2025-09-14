@@ -7,7 +7,8 @@ class LoginScreen(BaseScreen):
     CONFIRMATION_CODE_INPUT_ID = "kz.halyk.onlinebank.stage:id/et"
     ZERO_INT_XPATH = '//android.view.ViewGroup[@resource-id="kz.halyk.onlinebank.stage:id/passcode_fragment_keyboard"]/android.widget.FrameLayout[10]/android.widget.FrameLayout/android.widget.LinearLayout'
     GEO_PERMISSION_ID = "kz.halyk.onlinebank.stage:id/successButtonNext"
-    ONLINE_DUKEN_ID = "kz.halyk.onlinebank.stage:id/image"
+    MORE_MENU_ID = "kz.halyk.onlinebank.stage:id/navigation_more"
+    ONLINE_DUKEN_TEXT = "OnlineDuken"
 
     def phone_enter(self, phone):
         field = self.waits.el_clickable(By.ID, self.PHONE_INPUT_ID)
@@ -29,5 +30,8 @@ class LoginScreen(BaseScreen):
     def geo_permission(self):
         self.waits.el_clickable(By.ID, self.GEO_PERMISSION_ID).click()
 
+    def more_menu(self):
+        self.waits.presents_of_el(By.ID, self.MORE_MENU_ID).click()
+
     def online_duken(self):
-        self.waits.el_clickable(By.ID, self.ONLINE_DUKEN_ID).click()
+        self.text.find_anywhere(self.ONLINE_DUKEN_TEXT, timeout=10).click()
