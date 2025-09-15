@@ -19,3 +19,26 @@ class BaseScreen:
         except TimeoutException:
             print(f"Элемент не найден {locator}")
             return None
+
+        def safe_text_click(self, text: str, timeout: int = 10) -> bool:
+            """
+            Безопасный поиск и клик по тексту
+            Возвращает True если клик выполнен, False если элемент не найден
+            """
+            element = self.text.find_anywhere(text, timeout=timeout)
+            if element:
+                element.click()
+                return True
+            else:
+                print(f"Элемент с текстом '{text}' не найден")
+                return False
+
+        def require_text_click(self, text: str, timeout: int = 10):
+            """
+            Поиск и клик по тексту с обязательным выбрасыванием исключения при неудаче
+            """
+            element = self.text.find_anywhere(text, timeout=timeout)
+            if element:
+                element.click()
+            else:
+                raise Exception(f"Обязательный элемент с текстом '{text}' не найден на экране в течение {timeout}с")

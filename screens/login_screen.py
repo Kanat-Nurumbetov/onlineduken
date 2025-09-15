@@ -8,7 +8,7 @@ class LoginScreen(BaseScreen):
     ZERO_INT_XPATH = '//android.view.ViewGroup[@resource-id="kz.halyk.onlinebank.stage:id/passcode_fragment_keyboard"]/android.widget.FrameLayout[10]/android.widget.FrameLayout/android.widget.LinearLayout'
     GEO_PERMISSION_ID = "kz.halyk.onlinebank.stage:id/successButtonNext"
     MORE_MENU_ID = "kz.halyk.onlinebank.stage:id/navigation_more"
-    ONLINE_DUKEN_TEXT = "OnlineDuken"
+    ONLINE_DUKEN_TEXT = "Duken"
 
     def phone_enter(self, phone):
         field = self.waits.el_clickable(By.ID, self.PHONE_INPUT_ID)
@@ -30,8 +30,9 @@ class LoginScreen(BaseScreen):
     def geo_permission(self):
         self.waits.el_clickable(By.ID, self.GEO_PERMISSION_ID).click()
 
-    def more_menu(self):
-        self.waits.presents_of_el(By.ID, self.MORE_MENU_ID).click()
-
     def online_duken(self):
-        self.text.find_anywhere(self.ONLINE_DUKEN_TEXT, timeout=10).click()
+        element = self.text.find_anywhere(self.ONLINE_DUKEN_TEXT, timeout=10)
+        if element:
+            element.click()
+        else:
+            raise Exception(f"Элемент '{self.ONLINE_DUKEN_TEXT}' не найден на экране")

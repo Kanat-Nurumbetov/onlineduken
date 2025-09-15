@@ -7,16 +7,16 @@ from screens.scanner import ScannerScreen
 from screens.galery_picker import PickerScreen  # экран системного/встроенного пикера
 
 @pytest.mark.parametrize("kind", ["megapolis", "universal"])
-def test_scan_qr_from_gallery(login, clean_gallery_before_test, qr_png_on_device, kind):
+def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_on_device, kind):
     # qr_png_on_device → твоя фикстура, которая:
     # 1) генерит PNG через QrGenerator().png(kind)
     # 2) кладёт его в /sdcard/Pictures/... и триггерит медиасканер
     # 3) возвращает dict с полями: name, local, device
 
-    nav = BottomNav()
+    nav = BottomNav(driver)
     # payments = PaymentsScreen(driver)
-    scanner = ScannerScreen()
-    picker = PickerScreen()
+    scanner = ScannerScreen(driver)
+    picker = PickerScreen(driver)
 
     with allure.step("Открыть QR-сканер"):
         nav.open("QR")
