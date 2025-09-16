@@ -16,14 +16,6 @@ class Waits:
         except TimeoutException or NoSuchElementException:
             return False
 
-    def presents_of_el(self, by, value):
-        try:
-            return WebDriverWait(self.driver, self.timeout).until(
-                EC.presence_of_element_located((by, value))
-            )
-        except TimeoutException or NoSuchElementException:
-            return False
-
     def el_clickable(self, by, value):
         try:
             return WebDriverWait(self.driver, self.timeout).until(
