@@ -124,7 +124,7 @@ class PickerScreen(BaseScreen):
         if finder:
             found = finder.find_anywhere(q, timeout=2)
             if found:
-                found.element.click()
+                found.click()
                 return True
         return False
 
@@ -204,8 +204,10 @@ class PickerScreen(BaseScreen):
 
         for rid in ids:
             with suppress(WebDriverException, NoSuchElementException):
-                self.waits.clickable(By.ID, rid, timeout=2).click()
-                return
+                btn = self.waits.clickable(By.ID, rid, timeout=2)
+                if btn:
+                    btn.click()
+                    return
 
         # текстовые кнопки
         for txt in self._OK_TEXTS:

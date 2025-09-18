@@ -24,5 +24,11 @@ def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_o
     with allure.step("Загрузить QR из галереи"):
         scanner.tap_upload_from_gallery()           # кнопка "Загрузить с галереи"
         # В некоторых пикерах имя файла видно сразу; если нет — выбери первый в 'Недавние'
-        picker.select_file_by_name(qr_png_on_device["local"].name)
+        selected = picker.select_file_by_name(qr_png_on_device["local"].name)
+        if not selected:
+            selected = picker.select_first_recent()
+
+        assert selected, "Не удалось выбрать тестовый QR-файл ни по имени, ни через 'Недавние'"
+
+        picker.confirm()
 

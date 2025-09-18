@@ -114,6 +114,11 @@ class TextFinder:
         deadline = time.monotonic() + t
         platform = (self.driver.capabilities.get("platformName") or "").lower()
 
+        try:
+            original_context = getattr(self.driver, "current_context", "NATIVE_APP")
+        except WebDriverException:
+            original_context = "NATIVE_APP"
+
         logger.debug(f"Поиск текста '{text}' на платформе {platform}, таймаут: {t}s")
 
         while time.monotonic() < deadline:
@@ -138,7 +143,7 @@ class TextFinder:
                     return Found(el, "NATIVE_APP", self.driver)
 
             # 2) WebView поиск
-            ctx, el = self._find_in_webview(text, slice_timeout)
+            ctx, el = self._find_in_webview(text, slice_timeout, original_context=original_context)
             if el:
                 logger.debug(f"Найден элемент в webview {ctx}: {text}")
                 return Found(el, ctx, self.driver)
@@ -230,47 +235,54 @@ class TextFinder:
             time.sleep(self.poll)
         return None
 
-    def _find_in_webview(self, text: str, timeout: float):
+    def _find_in_webview(self, text: str, timeout: float, *, original_context: Optional[str] = None):
         """Поиск в WebView контекстах"""
         end = time.monotonic() + timeout
         want = (text or "").strip()
-        original_context = None
+        base_context = original_context
+        if not base_context:
+            try:
+                base_context = self.driver.current_context
+            except WebDriverException:
+                base_context = None
+
+        found_ctx: Optional[str] = None
+        found_el: Optional[WebElement] = None
 
         try:
-            original_context = self.driver.current_context
-        except WebDriverException:
-            pass
+            while time.monotonic() < end:
+                try:
+                    contexts = getattr(self.driver, "contexts", ["NATIVE_APP"])
+                    webviews = [c for c in contexts if c.startswith("WEBVIEW")]
 
-        while time.monotonic() < end:
-            try:
-                contexts = getattr(self.driver, "contexts", ["NATIVE_APP"])
-                webviews = [c for c in contexts if c.startswith("WEBVIEW")]
+                    for ctx in webviews:
+                        try:
+                            self.driver.switch_to.context(ctx)
 
-                for ctx in webviews:
-                    try:
-                        self.driver.switch_to.context(ctx)
+                            # Экранируем кавычки для XPath
+                            escaped_text = want.replace("'", "''")
+                            els = self.driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), '{escaped_text}')]")
 
-                        # Экранируем кавычки для XPath
-                        escaped_text = want.replace("'", "''")
-                        els = self.driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), '{escaped_text}')]")
+                            if els:
+                                found_ctx = ctx
+                                found_el = els[0]
+                                return found_ctx, found_el
 
-                        if els:
-                            return ctx, els[0]
+                        except WebDriverException as e:
+                            logger.debug(f"Ошибка поиска в webview {ctx}: {e}")
+                            continue
 
-                    except WebDriverException as e:
-                        logger.debug(f"Ошибка поиска в webview {ctx}: {e}")
-                        continue
+                except WebDriverException as e:
+                    logger.debug(f"Ошибка получения webview контекстов: {e}")
 
-            except WebDriverException as e:
-                logger.debug(f"Ошибка получения webview контекстов: {e}")
+                time.sleep(self.poll)
+        finally:
+            if base_context:
+                try:
+                    current_ctx = getattr(self.driver, "current_context", None)
+                    if current_ctx and current_ctx != base_context:
+                        self.driver.switch_to.context(base_context)
+                except WebDriverException as e:
+                    logger.debug(f"Не удалось восстановить контекст {base_context}: {e}")
 
-            time.sleep(self.poll)
-
-        # Восстанавливаем исходный контекст при неудачном поиске
-        if original_context:
-            try:
-                self.driver.switch_to.context(original_context)
-            except WebDriverException:
-                pass
-
-        return None, None
+        return found_ctx, found_el

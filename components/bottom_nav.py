@@ -35,11 +35,10 @@ class BottomNav(BaseScreen):
 
         # 1) основной путь — accessibility id
         if locator:
-            try:
-                self.waits.clickable(*locator).click()
+            element = self.waits.clickable(*locator, timeout=timeout)
+            if element:
+                element.click()
                 return
-            except Exception:
-                pass  # идём в фолбэки
 
         # 2) фолбэк: заранее заданная стратегия из словаря
         if self._click_from_map(name):
@@ -108,7 +107,7 @@ class BottomNav(BaseScreen):
         try:
             found = finder.find_anywhere(name, timeout=timeout)
             if found:
-                found.element.click()
+                found.click()
                 return True
         except Exception:
             pass

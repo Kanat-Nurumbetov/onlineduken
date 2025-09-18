@@ -190,37 +190,65 @@ def multi_platform(request):
     return platform
 
 
+def _resolve_appium_endpoint(platform: str) -> tuple[str, int]:
+    platform = platform.lower()
+    if platform == "android":
+        host = os.getenv("ANDROID_APPIUM_HOST") or os.getenv("APPIUM_HOST", "127.0.0.1")
+        port = int(os.getenv("ANDROID_APPIUM_PORT") or os.getenv("APPIUM_PORT", "4723"))
+        return host, port
+    if platform == "ios":
+        host = os.getenv("IOS_APPIUM_HOST") or os.getenv("APPIUM_HOST", "127.0.0.1")
+        port = int(os.getenv("IOS_APPIUM_PORT") or 4724)
+        return host, port
+    raise ValueError(f"Неподдерживаемая платформа для Appium: {platform}")
+
+
 @pytest.fixture(scope="session")
 def appium_service():
-    """Запуск Appium сервера для всей сессии"""
-    if not os.getenv('APPIUM_EXTERNAL'):  # Если не используем внешний Appium
-        # Запускаем Appium сервер
-        appium_process = subprocess.Popen([
+    """Гибко управляет Appium-серверами для разных платформ."""
+
+    processes: dict[tuple[str, int], subprocess.Popen | None] = {}
+
+    def ensure(platform: str):
+        host, port = _resolve_appium_endpoint(platform)
+        key = (host, port)
+
+        if key in processes:
+            # уже запущен/проверен
+            return processes[key]
+
+        external = os.getenv('APPIUM_EXTERNAL')
+        if external:
+            if not wait_for_appium(host, port):
+                raise RuntimeError(f"Внешний Appium сервер недоступен по адресу {host}:{port}")
+            processes[key] = None
+            return None
+
+        proc = subprocess.Popen([
             'appium',
-            '--address', '127.0.0.1',
-            '--port', '4723',
+            '--address', host,
+            '--port', str(port),
             '--relaxed-security'
         ])
 
-        # Ждем запуска
-        if not wait_for_appium():
-            appium_process.terminate()
-            raise RuntimeError("Не удалось запустить Appium сервер")
+        if not wait_for_appium(host, port):
+            proc.terminate()
+            proc.wait()
+            raise RuntimeError(f"Не удалось запустить Appium сервер на {host}:{port}")
 
-        yield appium_process
+        processes[key] = proc
+        return proc
 
-        # Останавливаем сервер
-        appium_process.terminate()
-        appium_process.wait()
-    else:
-        # Используем внешний Appium сервер
-        if not wait_for_appium():
-            raise RuntimeError("Внешний Appium сервер недоступен")
-        yield None
+    yield ensure
+
+    for proc in processes.values():
+        if proc:
+            proc.terminate()
+            proc.wait()
 
 
 @pytest.fixture
-def driver(request, test_platform):
+def driver(request, test_platform, appium_service):
     """Драйвер для указанной платформы"""
     # Инициализируем driver как None в самом начале
     driver = None
@@ -237,6 +265,9 @@ def driver(request, test_platform):
             pytest.skip("iOS тесты требуют macOS или удаленное iOS устройство")
     else:
         pytest.skip(f"Неподдерживаемая платформа: {platform}")
+
+    # Гарантируем наличие Appium сервера
+    appium_service(platform)
 
     # Создаем драйвер только после всех проверок
     appium_url = get_appium_url(platform)
@@ -282,27 +313,29 @@ def driver(request, test_platform):
 @pytest.fixture
 def multi_driver(request, multi_platform):
     """Параметризованный драйвер для многоплатформенного тестирования"""
-    platform = multi_platform
-    request.param = platform  # Передаем платформу в driver fixture
-    return driver(request, platform)
+
+    request.param = multi_platform
+    return request.getfixturevalue("driver")
 
 
 # Платформо-специфичные фикстуры
 @pytest.fixture
 def android_driver(request):
     """Драйвер специально для Android"""
+
     request.param = "android"
-    return driver(request, "android")
+    return request.getfixturevalue("driver")
 
 
 @pytest.fixture
 def ios_driver(request):
     """Драйвер специально для iOS"""
+
     if os.uname().sysname != "Darwin" and not os.getenv('IOS_REMOTE_URL'):
         pytest.skip("iOS тесты требуют macOS или удаленное iOS устройство")
 
     request.param = "ios"
-    return driver(request, "ios")
+    return request.getfixturevalue("driver")
 
 
 @pytest.fixture
@@ -330,7 +363,12 @@ def qr_png_on_device(driver, request):
     gen = QrGenerator()
     # если тест параметризует kind напрямую, просто передай его
     path = gen.png(kind or "megapolis")
-    device_path = push_png_via_driver(driver, path)  # /sdcard/Pictures/...
+    try:
+        device_path = push_png_via_driver(driver, path)
+    except NotImplementedError as exc:
+        pytest.skip(str(exc))
+    except RuntimeError as exc:
+        pytest.skip(f"Не удалось загрузить QR на устройство: {exc}")
     return {"name": path.stem, "local": path, "device": device_path}
 
 
