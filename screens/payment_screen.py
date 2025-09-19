@@ -1,5 +1,5 @@
 import os
-
+import re
 from screens.base_screen import BaseScreen
 from screens.login_screen import LoginScreen
 
@@ -34,26 +34,54 @@ class PaymentScreen(BaseScreen):
             text = (found.element.get_attribute("label") or "").strip()
         return text
 
+    def _parse_multi(self, value: str) -> list[str]:
+        """Парсит строку вида 'a,b c;d' в список ['a','b','c','d'] без пустых."""
+        if not value:
+            return []
+        parts = re.split(r'[,\s;]+', value.strip())
+        return [p for p in parts if p]
+
     def order_information_check(self):
         """Проверка ключевых реквизитов заказа по значениям из окружения."""
+        distributors = self._parse_multi(os.getenv("QR_DISTRIBUTOR_LIST", ""))
+        if not distributors:
+            single = os.getenv("QR_DEFAULT_DISTRIBUTOR", "")
+            distributors = [single] if single else []
 
         expected_map = {
             "iin": os.getenv("QR_DEFAULT_IIN", ""),
             "client": os.getenv("QR_DEFAULT_CLIENT", ""),
-            "distributor": os.getenv("QR_DEFAULT_DISTRIBUTOR", ""),
+            "distributor": distributors,
             "amount": os.getenv("QR_DEFAULT_AMOUNT", ""),
         }
 
-        for field, expected in expected_map.items():
-            if not expected:
+        for field, values in expected_map.items():
+            expected_values = [str(v) for v in values if str(v)]
+            if not expected_values:
                 continue
 
-            found = self.text.find_anywhere(str(expected), timeout=10)
-            assert found is not None, f"Поле '{field}' со значением '{expected}' не найдено на экране"
+            matched_value = None
+            matched_text = "None"
 
-            actual_text = self._extract_text(found)
-            assert str(expected) in actual_text, (
-                f"Поле '{field}' содержит '{actual_text}', ожидалось значение '{expected}'"
+            for val in expected_values:
+                found = self.text.find_anywhere(val, timeout=5)
+                if not found:
+                    continue
+                actual_text = self._extract_text(found)
+                if val in actual_text:
+                    matched_value = val
+                    matched_text = actual_text
+                    break
+
+            # если ничего не нашли — падаем с понятным сообщением
+            assert matched_value is not None, (
+                f"Поле '{field}' не найдено. "
+                f"Ожидалось одно из: {', '.join(expected_values)}"
+            )
+
+            # дополнительная защита (обычно уже true)
+            assert matched_value in matched_text, (
+                f"Поле '{field}' содержит '{matched_text}', ожидалось '{matched_value}'"
             )
 
     def confirm_payment(self):

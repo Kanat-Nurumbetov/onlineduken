@@ -4,9 +4,10 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 
 class Waits:
-    def __init__(self, driver, timeout=10):
+    def __init__(self, driver, timeout=10, poll=0.5):
         self.driver = driver
         self.timeout = timeout
+        self.poll = poll
 
     def el_visible(self, by, value, timeout=None):
         """Возвращает видимый элемент или ``None``."""
@@ -32,8 +33,11 @@ class Waits:
     def visible(self, by, value, timeout=None):
         return self.el_visible(by, value, timeout=timeout)
 
+
     def clickable(self, by, value, timeout=None):
-        return self.el_clickable(by, value, timeout=timeout)
+        t = timeout or self.timeout
+        return WebDriverWait(self.driver, t, poll_frequency=self.poll)\
+               .until(EC.element_to_be_clickable((by, value)))
 
     def el_gone(self, by, value, timeout=None) -> bool:
         t = timeout or self.timeout
