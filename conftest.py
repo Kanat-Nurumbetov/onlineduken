@@ -1,20 +1,16 @@
+from contextlib import suppress
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 from appium.options.ios import XCUITestOptions
-import pytest
 from pathlib import Path
-import os
+import os, re, pytest
 from dotenv import load_dotenv
 import allure
-from selenium.common.exceptions import WebDriverException
-import re
 import subprocess
 import time
 import requests
-from typing import Dict, Any
+import uuid
 
-from core import waits
-from core.textfinder import TextFinder
 from screens.login_screen import LoginScreen
 from core.qr_generator import QrGenerator
 from core.device_media import push_png_via_driver
@@ -27,6 +23,21 @@ if ENV_PATH.exists():
 else:
     raise RuntimeError(f"Не найден config/.env по пути: {ENV_PATH}")
 
+
+def env_bool(name: str, default=False) -> bool:
+    v = os.getenv(name)
+    if v is None:
+        return default
+    return v.strip().lower() in ("1","true","yes","y","on")
+
+def worker_id(config) -> str:
+    wi = getattr(config, "workerinput", None)
+    return (wi or {}).get("workerid", "gw0")
+
+def worker_index(config) -> int:
+    wid = worker_id(config)
+    m = re.match(r"gw(\d+)", wid)
+    return int(m.group(1)) if m else 0
 
 def resolve_app_path(platform: str = "android") -> str:
     """Получение пути к приложению в зависимости от платформы"""
@@ -68,14 +79,31 @@ def get_appium_url(platform: str) -> str:
 
     return f'http://{host}:{port}'
 
-
-def android_options() -> UiAutomator2Options:
-    """Настройки для Android"""
+def android_options(idx: int) -> UiAutomator2Options:
     opts = UiAutomator2Options()
+    udids = [u.strip() for u in os.getenv('ANDROID_UDIDS','emulator-5554').split(',') if u.strip()]
+    if idx >= len(udids):
+        pytest.skip(f"Нет свободного Android-устройства для воркера #{idx}")
+    udid = udids[idx]
+
     opts.set_capability('platformName', 'Android')
-    opts.set_capability('deviceName', os.getenv('ANDROID_DEVICE_NAME', 'emulator-5554'))
-    opts.set_capability('udid', os.getenv('ANDROID_UDID', 'emulator-5554'))
-    opts.set_capability('platformVersion', os.getenv('ANDROID_VERSION', '11.0'))
+    opts.set_capability('udid', udid)
+    opts.set_capability('deviceName', udid)
+
+    # уникальные порты
+    opts.set_capability('systemPort', 8200 + idx)
+    opts.set_capability('chromeDriverPort', 11000 + idx)
+    opts.set_capability('mjpegServerPort', 7810 + idx)
+
+    # автозапуск соответствующего AVD (по списку)
+    avd_names = [a.strip() for a in os.getenv('ANDROID_AVD_NAMES','').split(',') if a.strip()]
+    if idx < len(avd_names):
+        opts.set_capability('avd', avd_names[idx])
+        opts.set_capability('avdArgs', '-no-snapshot-load -no-snapshot-save -gpu angle')
+        opts.set_capability('avdLaunchTimeout', 120000)
+        opts.set_capability('avdReadyTimeout', 120000)
+
+    # дальше — твои cap'ы приложения
     opts.set_capability('automationName', 'UiAutomator2')
     opts.set_capability('appium:appPackage', 'kz.halyk.onlinebank.stage')
     opts.set_capability('appium:appActivity', 'kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity')
@@ -83,30 +111,27 @@ def android_options() -> UiAutomator2Options:
     opts.set_capability('autoGrantPermissions', True)
     opts.set_capability('autoAcceptAlerts', True)
     opts.set_capability('appium:newCommandTimeout', 300)
-
-    # Дополнительные настройки для CI/CD
-    if os.getenv('CI'):
-        opts.set_capability('appium:androidInstallTimeout', 90000)
-
     return opts
 
-
-def ios_options() -> XCUITestOptions:
-    """Настройки для iOS"""
+def ios_options(idx: int) -> XCUITestOptions:
     opts = XCUITestOptions()
-    opts.set_capability('platformName', 'iOS')
-    opts.set_capability('deviceName', os.getenv('IOS_DEVICE_NAME', 'iPhone 13'))
-    opts.set_capability('platformVersion', os.getenv('IOS_VERSION', '15.0'))
-    opts.set_capability('automationName', 'XCUITest')
+    opts.set_capability('platformName','iOS')
+    opts.set_capability('automationName','XCUITest')
+
+    udids = [u.strip() for u in os.getenv('IOS_UDIDS','').split(',') if u.strip()]
+    if udids:
+        if idx >= len(udids):
+            pytest.skip(f"Нет свободного iOS-устройства для воркера #{idx}")
+        opts.set_capability('udid', udids[idx])
+
+    opts.set_capability('wdaLocalPort', 8100 + idx)
+    opts.set_capability('webkitDebugProxyPort', 27753 + idx)
+
+    opts.set_capability('deviceName', os.getenv('IOS_DEVICE_NAME','iPhone 13'))
+    opts.set_capability('platformVersion', os.getenv('IOS_VERSION','15.0'))
     opts.set_capability('app', resolve_app_path('ios'))
     opts.set_capability('autoAcceptAlerts', True)
     opts.set_capability('appium:newCommandTimeout', 300)
-
-    # UDID устройства/симулятора
-    udid = os.getenv('IOS_UDID')
-    if udid:
-        opts.set_capability('udid', udid)
-
     return opts
 
 
@@ -205,37 +230,24 @@ def _resolve_appium_endpoint(platform: str) -> tuple[str, int]:
 
 @pytest.fixture(scope="session")
 def appium_service():
-    """Гибко управляет Appium-серверами для разных платформ."""
-
-    processes: dict[tuple[str, int], subprocess.Popen | None] = {}
+    processes: dict[tuple[str,int], subprocess.Popen|None] = {}
 
     def ensure(platform: str):
         host, port = _resolve_appium_endpoint(platform)
         key = (host, port)
-
         if key in processes:
-            # уже запущен/проверен
             return processes[key]
 
-        external = os.getenv('APPIUM_EXTERNAL')
-        if external:
+        if env_bool('APPIUM_EXTERNAL', False):
             if not wait_for_appium(host, port):
                 raise RuntimeError(f"Внешний Appium сервер недоступен по адресу {host}:{port}")
             processes[key] = None
             return None
 
-        proc = subprocess.Popen([
-            'appium',
-            '--address', host,
-            '--port', str(port),
-            '--relaxed-security'
-        ])
-
+        proc = subprocess.Popen(['appium','--address', host,'--port', str(port),'--relaxed-security'])
         if not wait_for_appium(host, port):
-            proc.terminate()
-            proc.wait()
+            proc.terminate(); proc.wait()
             raise RuntimeError(f"Не удалось запустить Appium сервер на {host}:{port}")
-
         processes[key] = proc
         return proc
 
@@ -243,79 +255,53 @@ def appium_service():
 
     for proc in processes.values():
         if proc:
-            proc.terminate()
-            proc.wait()
+            proc.terminate(); proc.wait()
 
 
 @pytest.fixture
 def driver(request, test_platform, appium_service):
-    """Драйвер для указанной платформы"""
-    # Инициализируем driver как None в самом начале
-    driver = None
-    platform = getattr(request, 'param', test_platform)
+    drv = None
+    idx = worker_index(request.config)
+    platform = getattr(request, 'param', test_platform).lower()
 
-    # Предварительные проверки
-    if platform.lower() == "android":
-        options = android_options()
-        if not ensure_emulator_running():
-            pytest.skip("Android эмулятор недоступен")
-    elif platform.lower() == "ios":
-        options = ios_options()
-        if os.uname().sysname != "Darwin" and not os.getenv('IOS_REMOTE_URL'):
-            pytest.skip("iOS тесты требуют macOS или удаленное iOS устройство")
+    # гарантируем сервер
+    appium_service(platform)
+    appium_url = get_appium_url(platform)
+
+    # подготовим устройство
+    if platform == "android":
+        # (опционально) автозапуск нужного AVD для этого UDID/порта
+        drv_opts = android_options(idx)
+    elif platform == "ios":
+        drv_opts = ios_options(idx)
     else:
         pytest.skip(f"Неподдерживаемая платформа: {platform}")
 
-    # Гарантируем наличие Appium сервера
-    appium_service(platform)
-
-    # Создаем драйвер только после всех проверок
-    appium_url = get_appium_url(platform)
-
     try:
-        driver = webdriver.Remote(appium_url, options=options)
-        driver.test_platform = platform.lower()
+        drv = webdriver.Remote(appium_url, options=drv_opts)
+        drv.test_platform = platform
+        drv.worker_index = idx
     except Exception as e:
         pytest.skip(f"Не удалось подключиться к {platform} Appium серверу: {e}")
 
-    # Yield должен быть в try-finally для гарантированной очистки
     try:
-        yield driver
+        yield drv
     finally:
-        # Cleanup выполнится независимо от того, как завершился тест
-        if driver is not None:
-            # Скриншот при падении
+        if drv:
             try:
                 failed = any(
                     getattr(request.node, f"rep_{stage}", None) and
                     getattr(request.node, f"rep_{stage}").failed
-                    for stage in ("setup", "call", "teardown")
+                    for stage in ("setup","call","teardown")
                 )
-
                 if failed:
-                    png = driver.get_screenshot_as_png()
-                    screenshot_name = f"{_slug(request.node.nodeid)}_{platform}_screenshot"
-                    allure.attach(
-                        png,
-                        name=screenshot_name,
-                        attachment_type=allure.attachment_type.PNG
-                    )
+                    png = drv.get_screenshot_as_png()
+                    allure.attach(png, name=f"{_slug(request.node.nodeid)}_{platform}_screenshot",
+                                  attachment_type=allure.attachment_type.PNG)
             except:
-                pass  # Игнорируем ошибки скриншота
-
-            # Закрываем драйвер
-            try:
-                driver.quit()
-            except:
-                pass  # Игнорируем ошибки закрытия
-
-
-@pytest.fixture
-def multi_driver(request, multi_platform):
-    """Параметризованный драйвер для многоплатформенного тестирования"""
-
-    request.param = multi_platform
-    return request.getfixturevalue("driver")
+                pass
+            with suppress(Exception):
+                drv.quit()
 
 
 # Платформо-специфичные фикстуры
@@ -337,13 +323,6 @@ def ios_driver(request):
     request.param = "ios"
     return request.getfixturevalue("driver")
 
-
-@pytest.fixture
-def text_finder(driver):
-    waits_obj = waits.Waits(driver)
-    return TextFinder(driver, waits_obj)
-
-
 @pytest.fixture
 def login(driver):
     login = LoginScreen(driver)
@@ -356,20 +335,24 @@ def login(driver):
     login.online_duken()
     return login
 
+def _worker_album(request) -> str:
+    return f"OnlineDuken_{worker_id(request.config)}"
 
 @pytest.fixture
 def qr_png_on_device(driver, request):
-    kind = getattr(request, "param", None)  # можно параметризовать через indirect
+    kind = getattr(getattr(request.node, "callspec", None), "params", {}).get("kind")
+    album = _worker_album(request)
     gen = QrGenerator()
-    # если тест параметризует kind напрямую, просто передай его
-    path = gen.png(kind or "megapolis")
+    # уникальное имя
+    name = f"{kind}_{uuid.uuid4().hex[:6]}"
+    path = gen.png(kind, filename=f"{name}.png")
     try:
-        device_path = push_png_via_driver(driver, path)
+        device_path = push_png_via_driver(driver, path)  # положи в /sdcard/Pictures/<album>/
     except NotImplementedError as exc:
         pytest.skip(str(exc))
     except RuntimeError as exc:
         pytest.skip(f"Не удалось загрузить QR на устройство: {exc}")
-    return {"name": path.stem, "local": path, "device": device_path}
+    return {"album": album, "name": name, "local": path, "device": device_path}
 
 
 @pytest.fixture
@@ -379,3 +362,15 @@ def clean_gallery_before_test(driver):
     ios_udid = os.getenv("IOS_SIM_UDID") if platform == 'ios' else None
     clean_gallery(driver, ios_udid=ios_udid, only_test_album=None)
     yield
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "delayed(seconds=20): задержать старт конкретного теста/параметра"
+    )
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item):
+    m = item.get_closest_marker("delayed")
+    if m:
+        seconds = int(m.kwargs.get("seconds") or (m.args[0] if m.args else 20))
+        time.sleep(seconds)

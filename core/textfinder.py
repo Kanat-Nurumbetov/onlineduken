@@ -1,11 +1,12 @@
-from typing import Optional
+from contextlib import suppress
 from dataclasses import dataclass
 import time
 import logging
 from appium.webdriver.common.appiumby import AppiumBy as By
 from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.remote.webdriver import WebDriver
+from appium.webdriver.webdriver import WebDriver as AppiumWebDriver
+from appium.webdriver.webelement import WebElement as AppiumWebElement
+from typing import Tuple, Optional
 
 # Настройка логирования
 logger = logging.getLogger(__name__)
@@ -13,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Found:
-    element: WebElement
-    context: str  # 'NATIVE_APP' или 'WEBVIEW_*'
-    driver: WebDriver
+    element: AppiumWebElement
+    context: str
+    driver: AppiumWebDriver
 
     def __post_init__(self):
         """Валидация входных параметров"""
@@ -175,25 +176,22 @@ class TextFinder:
                     logger.warning(f"Не удалось восстановить контекст {original_context}: {e}")
 
     def _find_native_android(self, text: str, timeout: float):
-        """Поиск в нативном Android UI через UiAutomator"""
         end = time.monotonic() + timeout
         q = (text or "").replace('"', r'\"')
 
         while time.monotonic() < end:
             try:
-                # Поиск по description
-                els = self.driver.find_elements("-android uiautomator", f'new UiSelector().descriptionContains("{q}")')
-                if els:
-                    return els[0]
-
-                # Поиск по тексту
-                els = self.driver.find_elements("-android uiautomator", f'new UiSelector().textContains("{q}")')
-                if els:
-                    return els[0]
-
+                for ui in (
+                        f'new UiSelector().descriptionContains("{q}")',
+                        f'new UiSelector().textContains("{q}")',
+                        f'new UiSelector().descriptionMatches("(?i).*{q}.*")',
+                        f'new UiSelector().textMatches("(?i).*{q}.*")',
+                ):
+                    els = self.driver.find_elements("-android uiautomator", ui)
+                    if els:
+                        return els[0]
             except WebDriverException as e:
                 logger.debug(f"Ошибка поиска Android native: {e}")
-
             time.sleep(self.poll)
         return None
 
@@ -235,54 +233,69 @@ class TextFinder:
             time.sleep(self.poll)
         return None
 
-    def _find_in_webview(self, text: str, timeout: float, *, original_context: Optional[str] = None):
-        """Поиск в WebView контекстах"""
-        end = time.monotonic() + timeout
-        want = (text or "").strip()
-        base_context = original_context
-        if not base_context:
-            try:
-                base_context = self.driver.current_context
-            except WebDriverException:
-                base_context = None
+    @staticmethod
+    def _xpath_literal(s: str) -> str:
+        # Возвращает корректный XPath-литерал даже если строка содержит и' и "
+        if "'" not in s:
+            return f"'{s}'"
+        if '"' not in s:
+            return f'"{s}"'
+        parts = s.split("'")
+        return "concat(" + ", \"'\", ".join(f"'{p}'" for p in parts) + ")"
 
-        found_ctx: Optional[str] = None
-        found_el: Optional[WebElement] = None
+    def _find_in_webview(self, text: str, timeout: float, original_context: str | None = None) -> tuple[
+        Optional[str], Optional[AppiumWebElement]]:
+
+        driver = self.driver
+        orig = getattr(driver, "current_context", "NATIVE_APP")
+        deadline = time.monotonic() + timeout
+        q = text.strip()
 
         try:
-            while time.monotonic() < end:
+            for ctx in driver.contexts:
+                if not str(ctx).startswith("WEBVIEW"):
+                    continue
+
+                driver.switch_to.context(ctx)
+
+                # 1) быстрый JS-поиск по body.innerText
                 try:
-                    contexts = getattr(self.driver, "contexts", ["NATIVE_APP"])
-                    webviews = [c for c in contexts if c.startswith("WEBVIEW")]
+                    inner = driver.execute_script(
+                        "return (document.body && (document.body.innerText || document.body.textContent)) || '';"
+                    ) or ""
+                    if q.casefold() in inner.casefold():
+                        # попробуем найти ближайший узел через XPath
+                        lit = self._xpath_literal(q)
+                        els = driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), {lit})]")
+                        el = els[0] if els else None
 
-                    for ctx in webviews:
-                        try:
-                            self.driver.switch_to.context(ctx)
+                        # ← твой фрагмент: вернём драйвер в orig, но сохраним ctx и el
+                        found_ctx = driver.current_context
+                        # вернёмся в исходный контекст ПЕРЕД возвратом
+                        driver.switch_to.context(orig)
+                        return found_ctx, el
+                except Exception:
+                    pass
 
-                            # Экранируем кавычки для XPath
-                            escaped_text = want.replace("'", "''")
-                            els = self.driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), '{escaped_text}')]")
+                # 2) запасной путь: прямой XPath без JS
+                try:
+                    els = driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), '{q}')]")
+                    if els:
+                        el = els[0]
+                        found_ctx = driver.current_context
+                        driver.switch_to.context(orig)
+                        return found_ctx, el
+                except Exception:
+                    pass
 
-                            if els:
-                                found_ctx = ctx
-                                found_el = els[0]
-                                return found_ctx, found_el
+                if time.monotonic() > deadline:
+                    break
 
-                        except WebDriverException as e:
-                            logger.debug(f"Ошибка поиска в webview {ctx}: {e}")
-                            continue
+            # ничего не нашли
+            return None, None
 
-                except WebDriverException as e:
-                    logger.debug(f"Ошибка получения webview контекстов: {e}")
-
-                time.sleep(self.poll)
         finally:
-            if base_context:
-                try:
-                    current_ctx = getattr(self.driver, "current_context", None)
-                    if current_ctx and current_ctx != base_context:
-                        self.driver.switch_to.context(base_context)
-                except WebDriverException as e:
-                    logger.debug(f"Не удалось восстановить контекст {base_context}: {e}")
-
-        return found_ctx, found_el
+            # гарантия возврата контекста (на случай исключений выше)
+            if getattr(driver, "current_context", None) != orig:
+                with suppress(Exception):
+                    driver.switch_to.context(orig)

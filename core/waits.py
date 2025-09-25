@@ -39,12 +39,32 @@ class Waits:
         return WebDriverWait(self.driver, t, poll_frequency=self.poll)\
                .until(EC.element_to_be_clickable((by, value)))
 
-    def el_gone(self, by, value, timeout=None) -> bool:
+    def el_gone(self, value, timeout=None) -> bool:
+        """Ждёт, пока найденный Found исчезнет (stale/invisible) с учётом контекста."""
         t = timeout or self.timeout
+        d = found.driver
+        orig = getattr(d, "current_context", "NATIVE_APP")
         try:
-            WebDriverWait(self.driver, t).until(EC.invisibility_of_element_located((by, value)))
-            return True
-        except TimeoutException:
-            return False
+            if orig != found.context:
+                d.switch_to.context(found.context)
+
+            # 1) стал "протухшим" (частый случай при перерисовке)
+            try:
+                WebDriverWait(d, t, poll_frequency=self.poll).until(EC.staleness_of(found.element))
+                return True
+            except TimeoutException:
+                pass
+
+            # 2) невидим (если узел жив, но скрыли)
+            try:
+                WebDriverWait(d, t, poll_frequency=self.poll).until(
+                    lambda _ : not found.element.is_displayed()
+                )
+                return True
+            except Exception:
+                return False
+        finally:
+            if getattr(d, "current_context", None) != orig:
+                d.switch_to.context(orig)
 
 

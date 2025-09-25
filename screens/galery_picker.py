@@ -147,7 +147,7 @@ class PickerScreen(BaseScreen):
         for sid in self.DOCS_LIST_IDS:
             rid = self._rid(pkg, sid)
             if self._has_any(By.ID, rid):
-                return (By.ID, rid)
+                return By.ID, rid
         return None
 
     def _find_photos_container(self):
@@ -155,7 +155,7 @@ class PickerScreen(BaseScreen):
         for sid in self.PHOTOS_GRID_IDS:
             rid = self._rid(pkg, sid)
             if self._has_any(By.ID, rid):
-                return (By.ID, rid)
+                return By.ID, rid
         return None
 
     def _list_container_locator(self) -> Optional[Tuple[str, str]]:

@@ -8,7 +8,10 @@ from screens.scanner import ScannerScreen
 from screens.galery_picker import PickerScreen
 from screens.success_screen import SuccessScreen
 
-@pytest.mark.parametrize("kind", ["megapolis", "universal"])
+@pytest.mark.parametrize("kind", [
+    pytest.param("megapolis",  id="mega"),
+    pytest.param("universal",  id="univ", marks=pytest.mark.delayed(seconds=5)),
+])
 def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_on_device, kind):
 
     nav = BottomNav(driver)
@@ -28,15 +31,17 @@ def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_o
         picker.confirm_if_needed()
 
 
-
     with allure.step("Проверка заказа"):
         payments.order_information_check()
 
     with allure.step("Нажать кнопку оплатить"):
-        payments.confirm_payment()
+        payments.pay_click()
 
     with allure.step("Ввести ОТП код для оплаты"):
         payments.confirm_payment()
+
+    with allure.step("Ожидание обработки платежа"):
+        success_screen.payment_processing_wait()
 
     with allure.step("Экран успеха"):
         success_screen.success_text_check()

@@ -2,6 +2,7 @@ import os
 import re
 from screens.base_screen import BaseScreen
 from screens.login_screen import LoginScreen
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
 
 class PaymentScreen(BaseScreen):
@@ -25,16 +26,42 @@ class PaymentScreen(BaseScreen):
             raise AssertionError(f"Элемент '{self.BANK_ACCOUNT_TEXT}' не найден на экране")
 
     def _extract_text(self, found) -> str:
-        """Извлекает текст из элемента с учетом разных атрибутов."""
+        """Безопасно получить текст: учитывает контекст, stale и даёт фолбэк."""
+        orig = getattr(self.driver, "current_context", "NATIVE_APP")
+        try:
+            # 1) перейти в контекст, где найден элемент
+            if orig != found.context:
+                self.driver.switch_to.context(found.context)
 
-        text = (getattr(found.element, "text", None) or "").strip()
-        if not text:
-            text = (found.element.get_attribute("value") or "").strip()
-        if not text:
-            text = (found.element.get_attribute("label") or "").strip()
-        return text
+            # 2) попробовать обычные атрибуты
+            try:
+                txt = (found.element.text or "").strip()
+                if not txt:
+                    txt = (found.element.get_attribute("content-desc") or "").strip()
+                if txt:
+                    return txt
+            except (NoSuchElementException, StaleElementReferenceException):
+                pass  # упал — попробуем фолбэки ниже
 
-    def _parse_multi(self, value: str) -> list[str]:
+            # 3) фолбэк: целиком текст экрана текущего контекста
+            if str(found.context).startswith("WEBVIEW"):
+                try:
+                    inner = self.driver.execute_script(
+                        "return (document.body && (document.body.innerText || document.body.textContent)) || '';"
+                    )
+                    return inner or ""
+                except Exception:
+                    return ""
+            else:
+                return self.driver.page_source or ""
+
+        finally:
+            # вернуть исходный контекст
+            if getattr(self.driver, "current_context", None) != orig:
+                self.driver.switch_to.context(orig)
+
+    @staticmethod
+    def _parse_multi(value: str) -> list[str]:
         """Парсит строку вида 'a,b c;d' в список ['a','b','c','d'] без пустых."""
         if not value:
             return []
@@ -43,7 +70,7 @@ class PaymentScreen(BaseScreen):
 
     def order_information_check(self):
         """Проверка ключевых реквизитов заказа по значениям из окружения."""
-        distributors = self._parse_multi(os.getenv("QR_DISTRIBUTOR_LIST", ""))
+        distributors = self._parse_multi(value=os.getenv("QR_DISTRIBUTOR_LIST", ""))
         if not distributors:
             single = os.getenv("QR_DEFAULT_DISTRIBUTOR", "")
             distributors = [single] if single else []
