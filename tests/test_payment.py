@@ -32,7 +32,7 @@ def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_o
 
 
     with allure.step("Проверка заказа"):
-        payments.order_information_check()
+        assert payments.verify_amount_displayed("1", timeout=5), "Сумма не отображается на экране"
 
     with allure.step("Нажать кнопку оплатить"):
         payments.pay_click()

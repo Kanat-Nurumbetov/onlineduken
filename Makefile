@@ -32,7 +32,13 @@ servers:
 # Локальные тесты
 local-android:
 	@echo "Running Android tests locally..."
-	PLATFORM=android ENABLE_ANDROID=true ENABLE_IOS=false ./scripts/universal_setup.sh
+	TEST_PLATFORM=android ANDROID_HEADLESS=1 APPIUM_EXTERNAL=1 ANDROID_APPIUM_HOST=127.0.0.1 ANDROID_APPIUM_PORT=4723 \
+		pytest -q tests/test_payment.py
+
+local-android-gui:
+	@echo "Running Android tests locally (GUI emulator)..."
+	TEST_PLATFORM=android ANDROID_HEADLESS=0 APPIUM_EXTERNAL=1 ANDROID_APPIUM_HOST=127.0.0.1 ANDROID_APPIUM_PORT=4723 \
+		pytest -q tests/test_payment.py
 
 local-ios:
 	@echo "Running iOS tests locally (requires macOS)..."

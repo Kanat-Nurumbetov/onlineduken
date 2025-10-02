@@ -99,7 +99,13 @@ def android_options(idx: int) -> UiAutomator2Options:
     avd_names = [a.strip() for a in os.getenv('ANDROID_AVD_NAMES','').split(',') if a.strip()]
     if idx < len(avd_names):
         opts.set_capability('avd', avd_names[idx])
-        opts.set_capability('avdArgs', '-no-snapshot-load -no-snapshot-save -gpu angle')
+        headless = env_bool('ANDROID_HEADLESS', False)
+        avd_args = ['-no-snapshot-load', '-no-snapshot-save']
+        # Графика: в headless режиме безопаснее swiftshader
+        avd_args += ['-gpu', 'swiftshader_indirect' if headless else 'angle']
+        if headless:
+            avd_args += ['-no-window', '-no-audio']
+        opts.set_capability('avdArgs', ' '.join(avd_args))
         opts.set_capability('avdLaunchTimeout', 120000)
         opts.set_capability('avdReadyTimeout', 120000)
 
@@ -202,9 +208,16 @@ def test_platform():
     return get_platform_from_pytest_args()
 
 
-@pytest.fixture(scope="session", params=["android", "ios"])
+@pytest.fixture(scope="session", params=(
+    ["android", "ios"] if os.getenv("ENABLE_MULTI_PLATFORM", "0").strip().lower() in ("1","true","yes","y","on")
+    else [os.getenv('TEST_PLATFORM', 'android').lower()]
+))
 def multi_platform(request):
-    """Параметризованная фикстура для многоплатформенного тестирования"""
+    """Параметризованная фикстура для многоплатформенного тестирования.
+
+    По умолчанию не множит сессию: берёт платформу из --platform/TEST_PLATFORM.
+    Для прогона обеих платформ установите ENABLE_MULTI_PLATFORM=1.
+    """
     platform = request.param
 
     # Пропускаем iOS тесты если не на macOS (кроме случаев с удаленным устройством)
@@ -277,12 +290,21 @@ def driver(request, test_platform, appium_service):
     else:
         pytest.skip(f"Неподдерживаемая платформа: {platform}")
 
-    try:
-        drv = webdriver.Remote(appium_url, options=drv_opts)
-        drv.test_platform = platform
-        drv.worker_index = idx
-    except Exception as e:
-        pytest.skip(f"Не удалось подключиться к {platform} Appium серверу: {e}")
+    attempts = int(os.getenv("APPIUM_CONNECT_RETRIES", "3") or 3)
+    delay = float(os.getenv("APPIUM_CONNECT_RETRY_DELAY", "2") or 2)
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            drv = webdriver.Remote(appium_url, options=drv_opts)
+            drv.test_platform = platform
+            drv.worker_index = idx
+            break
+        except Exception as e:
+            last_error = e
+            if attempt < attempts:
+                time.sleep(delay)
+            else:
+                pytest.skip(f"Не удалось подключиться к {platform} Appium серверу после {attempts} попыток: {e}")
 
     try:
         yield drv
@@ -347,7 +369,8 @@ def qr_png_on_device(driver, request):
     name = f"{kind}_{uuid.uuid4().hex[:6]}"
     path = gen.png(kind, filename=f"{name}.png")
     try:
-        device_path = push_png_via_driver(driver, path)  # положи в /sdcard/Pictures/<album>/
+        device_dir = f"/sdcard/Pictures/{album}"
+        device_path = push_png_via_driver(driver, path, device_dir=device_dir)
     except NotImplementedError as exc:
         pytest.skip(str(exc))
     except RuntimeError as exc:
@@ -356,11 +379,12 @@ def qr_png_on_device(driver, request):
 
 
 @pytest.fixture
-def clean_gallery_before_test(driver):
+def clean_gallery_before_test(driver, request):
     """Очистка галереи с учетом платформы"""
     platform = getattr(driver, 'test_platform', 'android')
     ios_udid = os.getenv("IOS_SIM_UDID") if platform == 'ios' else None
-    clean_gallery(driver, ios_udid=ios_udid, only_test_album=None)
+    album = _worker_album(request)
+    clean_gallery(driver, ios_udid=ios_udid, only_test_album=album)
     yield
 
 def pytest_configure(config):

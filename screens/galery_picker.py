@@ -123,8 +123,10 @@ class PickerScreen(BaseScreen):
 
         for rid in ids:
             with suppress(WebDriverException, NoSuchElementException):
-                self.waits.clickable(By.ID, rid, timeout=2).click()
-                return
+                button = self.waits.clickable(By.ID, rid, timeout=2)
+                if button:
+                    button.click()
+                    return
         # многие пикеры подтверждение не требуют — no-op
 
     def cancel(self) -> None:

@@ -36,10 +36,13 @@ class Waits:
 
     def clickable(self, by, value, timeout=None):
         t = timeout or self.timeout
-        return WebDriverWait(self.driver, t, poll_frequency=self.poll)\
-               .until(EC.element_to_be_clickable((by, value)))
+        try:
+            return WebDriverWait(self.driver, t, poll_frequency=self.poll)\
+                   .until(EC.element_to_be_clickable((by, value)))
+        except (TimeoutException, NoSuchElementException):
+            return None
 
-    def el_gone(self, value, timeout=None) -> bool:
+    def el_gone(self, found, timeout=None) -> bool:
         """Ждёт, пока найденный Found исчезнет (stale/invisible) с учётом контекста."""
         t = timeout or self.timeout
         d = found.driver
@@ -66,5 +69,4 @@ class Waits:
         finally:
             if getattr(d, "current_context", None) != orig:
                 d.switch_to.context(orig)
-
 
