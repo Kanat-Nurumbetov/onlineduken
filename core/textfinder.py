@@ -3,7 +3,7 @@ from dataclasses import dataclass
 import time
 import logging
 from appium.webdriver.common.appiumby import AppiumBy as By
-from selenium.common.exceptions import WebDriverException, StaleElementReferenceException
+from selenium.common.exceptions import WebDriverException, StaleElementReferenceException, NoSuchElementException
 from appium.webdriver.webdriver import WebDriver as AppiumWebDriver
 from appium.webdriver.webelement import WebElement as AppiumWebElement
 from typing import Optional
@@ -125,6 +125,97 @@ class TextFinder:
 
         logger.warning(f"Элемент не найден за {t}s: '{text}'")
         return None
+
+    def find_all_anywhere(self, text: str, timeout=10):
+        """
+        Поиск всех элементов с указанным текстом в NATIVE_APP и всех WEBVIEW контекстах.
+
+        Args:
+            text: текст для поиска
+            timeout: таймаут ожидания
+
+        Returns:
+            Список Found объектов или пустой список
+        """
+        if not text or not text.strip():
+            logger.warning("Пустой текст для поиска")
+            return []
+
+        end = time.time() + timeout
+        found_elements = []
+        platform = (self.driver.capabilities.get("platformName") or "").lower()
+
+        try:
+            original_context = getattr(self.driver, "current_context", "NATIVE_APP")
+        except WebDriverException:
+            original_context = "NATIVE_APP"
+
+        while time.time() < end:
+            # Получаем все доступные контексты
+            try:
+                contexts = list(self.driver.contexts)
+            except WebDriverException:
+                contexts = ["NATIVE_APP"]
+
+            for ctx in contexts:
+                try:
+                    self.driver.switch_to.context(ctx)
+                except WebDriverException as e:
+                    logger.warning(f"Не удалось переключиться в контекст {ctx}: {e}")
+                    continue
+
+                # Ищем элементы в зависимости от контекста
+                try:
+                    if ctx == "NATIVE_APP":
+                        # Для Android
+                        if platform.startswith("android"):
+                            q = text.replace('"', r'\"')
+                            ui = f'new UiSelector().textContains("{q}")'
+                            elements = self.driver.find_elements("-android uiautomator", ui)
+                        # Для iOS
+                        elif platform.startswith("ios"):
+                            p = text.replace("'", "\\'")
+                            predicate = f"label CONTAINS[c] '{p}' OR name CONTAINS[c] '{p}' OR value CONTAINS[c] '{p}'"
+                            elements = self.driver.find_elements("-ios predicate string", predicate)
+                        else:
+                            elements = []
+                    else:
+                        # WebView контекст
+                        lit = self._xpath_literal(text)
+                        elements = self.driver.find_elements(By.XPATH, f"//*[contains(normalize-space(), {lit})]")
+
+                    # Добавляем только видимые элементы
+                    for element in elements:
+                        try:
+                            if element.is_displayed():
+                                found_elements.append(Found(element, ctx, self.driver))
+                        except (StaleElementReferenceException, WebDriverException):
+                            continue
+
+                except (NoSuchElementException, StaleElementReferenceException, WebDriverException) as e:
+                    logger.debug(f"Ошибка при поиске в контексте {ctx}: {e}")
+                    continue
+
+            # Если нашли элементы, возвращаем их
+            if found_elements:
+                # Восстанавливаем оригинальный контекст
+                try:
+                    if self.driver.current_context != original_context:
+                        self.driver.switch_to.context(original_context)
+                except WebDriverException:
+                    pass
+                return found_elements
+
+            time.sleep(self.poll)
+
+        # Восстанавливаем оригинальный контекст
+        try:
+            if self.driver.current_context != original_context:
+                self.driver.switch_to.context(original_context)
+        except WebDriverException:
+            pass
+
+        return []
 
     def present_anywhere(self, text: str, timeout: Optional[int] = None) -> bool:
         """Проверка присутствия текста без сохранения ссылки на элемент"""
