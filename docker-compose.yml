@@ -1,147 +1,63 @@
 version: '3.8'
 
 services:
-  # Универсальный сервис для Android
-  mobile-tests-android:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PLATFORM: android
-        ENABLE_ANDROID: "true"
-        ENABLE_IOS: "false"
-    container_name: mobile-tests-android
-    privileged: true
+  appium:
+    image: appium/appium:latest
+    container_name: appium-server
     ports:
       - "4723:4723"
-      - "5037:5037"  # ADB
-      - "5554:5554"  # Emulator
-      - "5555:5555"  # Emulator ADB
-    volumes:
-      - ./reports/android:/app/reports
-      - ./screenshots/android:/app/screenshots
-      - /dev/kvm:/dev/kvm  # Для аппаратного ускорения
     environment:
-      - PLATFORM=android
-      - ENABLE_ANDROID=true
-      - ENABLE_IOS=false
-      - APPIUM_HOST=0.0.0.0
-      - APPIUM_PORT=4723
-      - ANDROID_AVD_NAME=test_emulator_android
-      - ANDROID_API_LEVEL=30
-      - RUN_TESTS=true
-      - PYTEST_WORKERS=1
-    networks:
-      - mobile-network
+      - RELAXED_SECURITY=true
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+      - ./app:/app
+    privileged: true
+    command: appium --allow-insecure chromedriver_autodownload --relaxed-security
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4723/status"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 30s
 
-  # Универсальный сервис для iOS (только на macOS)
-  mobile-tests-ios:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PLATFORM: ios
-        ENABLE_ANDROID: "false"
-        ENABLE_IOS: "true"
-    container_name: mobile-tests-ios
-    ports:
-      - "4724:4724"
-    volumes:
-      - ./reports/ios:/app/reports
-      - ./screenshots/ios:/app/screenshots
-      # Для доступа к macOS симуляторам нужны дополнительные примонтирования
-      - /Applications/Xcode.app:/Applications/Xcode.app:ro
-      - /Library/Developer:/Library/Developer:ro
-    environment:
-      - PLATFORM=ios
-      - ENABLE_ANDROID=false
-      - ENABLE_IOS=true
-      - APPIUM_HOST=0.0.0.0
-      - APPIUM_PORT=4724
-      - IOS_PLATFORM_VERSION=15.0
-      - IOS_DEVICE_NAME=iPhone 13
-      - RUN_TESTS=true
-    profiles:
-      - ios  # Условный профиль
-    networks:
-      - mobile-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4724/status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  # Параллельный режим - один контейнер для обеих платформ
-  mobile-tests-parallel:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PLATFORM: both
-        ENABLE_ANDROID: "true"
-        ENABLE_IOS: "true"
-    container_name: mobile-tests-parallel
+  android-emulator:
+    image: budtmo/docker-android:emulator_11.0
+    container_name: android-emulator
     privileged: true
     ports:
-      - "4723:4723"  # Android Appium
-      - "4724:4724"  # iOS Appium
-      - "5037:5037"  # ADB
-      - "5554:5554"  # Android Emulator
-    volumes:
-      - ./reports:/app/reports
-      - ./screenshots:/app/screenshots
-      - /dev/kvm:/dev/kvm
-      # Для macOS и iOS
-      - /Applications/Xcode.app:/Applications/Xcode.app:ro
-      - /Library/Developer:/Library/Developer:ro
-    environment:
-      - PLATFORM=both
-      - PARALLEL_MODE=true
-      - ENABLE_ANDROID=true
-      - ENABLE_IOS=true
-      - APPIUM_HOST=0.0.0.0
-      - ANDROID_AVD_NAME=test_emulator_parallel
-      - IOS_DEVICE_NAME=iPhone 13
-      - RUN_TESTS=true
-      - PYTEST_WORKERS=4
-    profiles:
-      - parallel
-    networks:
-      - mobile-network
-
-  # Только Appium серверы без тестов (для внешнего управления)
-  appium-servers:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PLATFORM: both
-        ENABLE_ANDROID: "true"
-        ENABLE_IOS: "true"
-    container_name: appium-servers
-    privileged: true
-    ports:
-      - "4723:4723"
-      - "4724:4724"
-      - "5037:5037"
+      - "5555:5555"
       - "5554:5554"
-    volumes:
-      - /dev/kvm:/dev/kvm
     environment:
-      - PLATFORM=both
-      - PARALLEL_MODE=true
-      - ENABLE_ANDROID=true
-      - ENABLE_IOS=true
-      - APPIUM_HOST=0.0.0.0
-      - RUN_TESTS=false  # Не запускаем тесты, только серверы
-    networks:
-      - mobile-network
+      - EMULATOR_DEVICE=Samsung Galaxy S10
+      - WEB_VNC=true
+      - DATAPARTITION=4096m
+      - EMULATOR_TIMEOUT=300
+    volumes:
+      - ./app:/app
+    healthcheck:
+      test: ["CMD", "adb", "shell", "getprop", "sys.boot_completed"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
 
-networks:
-  mobile-network:
-    driver: bridge
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test-runner
+    depends_on:
+      appium:
+        condition: service_healthy
+      android-emulator:
+        condition: service_healthy
+    environment:
+      - APPIUM_HOST=appium
+      - APPIUM_PORT=4723
+      - DEVICE_HOST=android-emulator
+      - DEVICE_PORT=5555
+    volumes:
+      - .:/workspace
+      - ./allure-results:/workspace/allure-results
+    working_dir: /workspace
+    command: pytest tests/test_smoke.py -v -s --alluredir=allure-results --clean-alluredir

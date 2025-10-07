@@ -1,123 +1,107 @@
-.PHONY: build android ios parallel servers clean setup-ci
+.PHONY: help
+help:
+	@echo "Доступные команды:"
+	@echo "  make docker-up          - Запустить все сервисы (Appium + Emulator)"
+	@echo "  make docker-down        - Остановить все сервисы"
+	@echo "  make test-smoke         - Запустить smoke-тесты"
+	@echo "  make test-all           - Запустить все тесты"
+	@echo "  make test-smoke-local   - Smoke-тесты локально (без Docker)"
+	@echo "  make ci-test            - Запуск для CI/CD"
+	@echo "  make allure-report      - Сгенерировать Allure отчёт"
+	@echo "  make clean              - Очистить артефакты"
 
-# Переменные
-DOCKER_COMPOSE = docker-compose
-PYTEST_WORKERS ?= 2
+# ============ Docker команды ============
+.PHONY: docker-up
+docker-up:
+	@echo "🚀 Запуск Docker окружения..."
+	docker-compose up -d appium android-emulator
+	@echo "⏳ Ожидание готовности сервисов..."
+	docker-compose exec -T android-emulator timeout 120 sh -c 'until adb shell getprop sys.boot_completed | grep 1; do sleep 5; done'
+	@echo "✅ Окружение готово"
 
-# Сборка образа
-build:
-	@echo "Building universal mobile testing image..."
-	$(DOCKER_COMPOSE) build mobile-tests-android
+.PHONY: docker-down
+docker-down:
+	@echo "🛑 Остановка Docker окружения..."
+	docker-compose down -v
+	@echo "✅ Остановлено"
 
-# Только Android тесты
-android:
-	@echo "Running Android tests..."
-	$(DOCKER_COMPOSE) up --build mobile-tests-android --abort-on-container-exit
+.PHONY: docker-logs
+docker-logs:
+	docker-compose logs -f
 
-# Только iOS тесты (требует macOS)
-ios:
-	@echo "Running iOS tests..."
-	$(DOCKER_COMPOSE) --profile ios up --build mobile-tests-ios --abort-on-container-exit
+# ============ Тестовые команды (Docker) ============
+.PHONY: test-smoke
+test-smoke: docker-up
+	@echo "🧪 Запуск smoke-тестов в Docker..."
+	docker-compose run --rm tests pytest tests/test_smoke.py -v -s --tb=short --alluredir=allure-results
+	@$(MAKE) docker-down
 
-# Параллельное выполнение на обеих платформах
-parallel:
-	@echo "Running tests on both platforms in parallel..."
-	$(DOCKER_COMPOSE) --profile parallel up --build mobile-tests-parallel --abort-on-container-exit
+.PHONY: test-all
+test-all: docker-up
+	@echo "🧪 Запуск всех тестов в Docker..."
+	docker-compose run --rm tests pytest tests/ -v -s --tb=short --alluredir=allure-results
+	@$(MAKE) docker-down
 
-# Только Appium серверы (без автоматического запуска тестов)
-servers:
-	@echo "Starting Appium servers..."
-	$(DOCKER_COMPOSE) up --build appium-servers
+.PHONY: test-payment
+test-payment: docker-up
+	@echo "🧪 Запуск payment тестов в Docker..."
+	docker-compose run --rm tests pytest tests/test_payment.py -v -s --tb=short --alluredir=allure-results
+	@$(MAKE) docker-down
 
-# Локальные тесты
-local-android:
-	@echo "Running Android tests locally..."
-	TEST_PLATFORM=android ANDROID_HEADLESS=1 APPIUM_EXTERNAL=1 ANDROID_APPIUM_HOST=127.0.0.1 ANDROID_APPIUM_PORT=4723 \
-		pytest -q tests/test_payment.py
+# ============ CI/CD команда ============
+.PHONY: ci-test
+ci-test:
+	@echo "🤖 CI/CD: Запуск тестов..."
+	docker-compose up -d appium android-emulator
+	@echo "⏳ Ожидание готовности..."
+	sleep 60
+	docker-compose run --rm tests pytest tests/test_smoke.py -v --tb=short --alluredir=allure-results --junit-xml=junit.xml || true
+	docker-compose down -v
+	@echo "✅ CI/CD тесты завершены"
 
-local-android-gui:
-	@echo "Running Android tests locally (GUI emulator)..."
-	TEST_PLATFORM=android ANDROID_HEADLESS=0 APPIUM_EXTERNAL=1 ANDROID_APPIUM_HOST=127.0.0.1 ANDROID_APPIUM_PORT=4723 \
-		pytest -q tests/test_payment.py
+# ============ Локальные команды (без Docker) ============
+.PHONY: check-local-env
+check-local-env:
+	@command -v appium >/dev/null 2>&1 || { echo "❌ Appium не установлен"; exit 1; }
+	@command -v adb >/dev/null 2>&1 || { echo "❌ ADB не установлен"; exit 1; }
+	@pgrep -f appium >/dev/null || { echo "⚠️ Appium не запущен. Запустите: appium"; exit 1; }
+	@adb devices | grep -q "device$$" || { echo "⚠️ Устройство/эмулятор не подключен"; exit 1; }
+	@echo "✅ Локальное окружение готово"
 
-local-ios:
-	@echo "Running iOS tests locally (requires macOS)..."
-	PLATFORM=ios ENABLE_ANDROID=false ENABLE_IOS=true ./scripts/universal_setup.sh
+.PHONY: test-smoke-local
+test-smoke-local: check-local-env
+	@echo "🧪 Запуск smoke-тестов локально..."
+	pytest tests/test_smoke.py -v -s --tb=short --alluredir=allure-results
 
-local-parallel:
-	@echo "Running parallel tests locally..."
-	PLATFORM=both PARALLEL_MODE=true ENABLE_ANDROID=true ENABLE_IOS=true PYTEST_WORKERS=$(PYTEST_WORKERS) ./scripts/universal_setup.sh
+.PHONY: test-all-local
+test-all-local: check-local-env
+	@echo "🧪 Запуск всех тестов локально..."
+	pytest tests/ -v -s --tb=short --alluredir=allure-results
 
-# Тесты с маркерами
-test-smoke:
-	@echo "Running smoke tests..."
-	$(DOCKER_COMPOSE) run --rm mobile-tests-android python -m pytest tests/ -m smoke -v
+# ============ Отчёты ============
+.PHONY: allure-report
+allure-report:
+	@echo "📊 Генерация Allure отчёта..."
+	@command -v allure >/dev/null 2>&1 || { echo "❌ Allure не установлен"; exit 1; }
+	allure serve allure-results
 
-test-regression:
-	@echo "Running regression tests..."  
-	$(DOCKER_COMPOSE) --profile parallel run --rm mobile-tests-parallel python -m pytest tests/ -m regression --dist=loadgroup -n $(PYTEST_WORKERS) -v
+.PHONY: allure-generate
+allure-generate:
+	@echo "📊 Генерация статического Allure отчёта..."
+	allure generate allure-results -o allure-report --clean
+	@echo "✅ Отчёт создан в: allure-report/index.html"
 
-# Интерактивные команды
-shell:
-	$(DOCKER_COMPOSE) run --rm mobile-tests-android /bin/bash
-
-shell-android:
-	$(DOCKER_COMPOSE) exec mobile-tests-android /bin/bash
-
-shell-ios:
-	$(DOCKER_COMPOSE) --profile ios exec mobile-tests-ios /bin/bash
-
-# Проверка статуса серверов
-status:
-	@echo "Checking Appium servers status..."
-	@curl -s http://localhost:4723/status | jq -r '.value.build.version // "Android Appium not available"' | sed 's/^/Android Appium: /'
-	@curl -s http://localhost:4724/status | jq -r '.value.build.version // "iOS Appium not available"' | sed 's/^/iOS Appium: /' 2>/dev/null || echo "iOS Appium: not available"
-
-# Логи
-logs:
-	$(DOCKER_COMPOSE) logs -f
-
-logs-android:
-	$(DOCKER_COMPOSE) logs -f mobile-tests-android
-
-logs-ios:
-	$(DOCKER_COMPOSE) --profile ios logs -f mobile-tests-ios
-
-logs-parallel:
-	$(DOCKER_COMPOSE) --profile parallel logs -f mobile-tests-parallel
-
-# Очистка
+# ============ Очистка ============
+.PHONY: clean
 clean:
-	@echo "Cleaning up..."
-	$(DOCKER_COMPOSE) --profile ios --profile parallel down -v
-	docker system prune -f
-	rm -rf reports/* screenshots/*
+	@echo "🧹 Очистка артефактов..."
+	rm -rf allure-results allure-report .pytest_cache __pycache__ junit.xml
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "✅ Очистка завершена"
 
-# Настройка для CI/CD
-setup-ci:
-	@echo "Setting up CI/CD environment..."
-	mkdir -p reports/{android,ios,parallel} screenshots/{android,ios}
-	chmod +x scripts/*.sh
-
-# Остановка всех контейнеров
-stop:
-	$(DOCKER_COMPOSE) --profile ios --profile parallel down
-
-# Перезапуск сервисов
-restart: stop
-	$(DOCKER_COMPOSE) up -d appium-servers
-
-# Отчеты
-reports:
-	@echo "Generating Allure reports..."
-	allure generate reports/allure-results -o reports/allure-report --clean
-	allure open reports/allure-report
-
-# Проверка окружения
-check:
-	@echo "Checking environment and dependencies..."
-	@docker --version
-	@docker-compose --version
-	@python3 --version
-	@echo "Docker images:"
-	@docker images | grep mobile-tests || echo "No mobile-tests images found"
+.PHONY: clean-docker
+clean-docker: docker-down
+	@echo "🧹 Полная очистка Docker..."
+	docker system prune -af --volumes
+	@echo "✅ Docker очищен"

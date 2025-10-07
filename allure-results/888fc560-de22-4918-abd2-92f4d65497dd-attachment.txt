@@ -1,0 +1,903 @@
+[38;5;112m[Appium][0m Welcome to Appium v2.11.5
+[38;5;112m[Appium][0m Non-default server args:
+[38;5;112m[Appium][0m { address: [32m'127.0.0.1'[39m, relaxedSecurityEnabled: [33mtrue[39m }
+[38;5;112m[Appium][0m The autodetected Appium home path: /Users/a00059362/.appium
+[38;5;112m[Appium][0m Attempting to load driver gecko...
+[38;5;112m[Appium][0m Attempting to load driver chromium...
+[38;5;112m[Appium][0m Attempting to load driver espresso...
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-chromium-driver/index.js
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-espresso-driver/build/index.js
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-geckodriver/build/index.js
+[38;5;112m[Appium][0m ChromiumDriver has been successfully loaded in 3.220s
+[38;5;112m[Appium][0m EspressoDriver has been successfully loaded in 3.220s
+[38;5;112m[Appium][0m GeckoDriver has been successfully loaded in 3.223s
+[38;5;112m[Appium][0m Attempting to load driver safari...
+[38;5;112m[Appium][0m Attempting to load driver xcuitest...
+[38;5;112m[Appium][0m Attempting to load driver uiautomator2...
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/build/index.js
+[38;5;112m[Appium][0m AndroidUiautomator2Driver has been successfully loaded in 1.621s
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-safari-driver/build/index.js
+[38;5;112m[Appium][0m SafariDriver has been successfully loaded in 1.980s
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-xcuitest-driver/build/index.js
+[38;5;112m[Appium][0m XCUITestDriver has been successfully loaded in 3.699s
+[38;5;112m[Appium][0m Appium REST http interface listener started on http://127.0.0.1:4723
+[38;5;112m[Appium][0m Available drivers:
+[38;5;112m[Appium][0m   - gecko@1.4.0 (automationName 'Gecko')
+[38;5;112m[Appium][0m   - chromium@1.3.38 (automationName 'Chromium')
+[38;5;112m[Appium][0m   - espresso@3.5.0 (automationName 'Espresso')
+[38;5;112m[Appium][0m   - safari@3.5.18 (automationName 'Safari')
+[38;5;112m[Appium][0m   - xcuitest@7.27.0 (automationName 'XCUITest')
+[38;5;112m[Appium][0m   - uiautomator2@3.8.0 (automationName 'UiAutomator2')
+[38;5;112m[Appium][0m No plugins have been installed. Use the "appium plugin" command to install the one(s) you want to use.
+[38;5;86m[HTTP][0m [37m-->[39m [37mGET[39m [37m/status[39m {}
+[38;5;208m[AppiumDriver@8101][0m Calling AppiumDriver.getStatus() with args: []
+[38;5;208m[AppiumDriver@8101][0m Responding to client with driver.getStatus() result: {"ready":true,"message":"The server is ready to accept new connections","build":{"version":"2.11.5"}}
+[38;5;86m[HTTP][0m <-- GET /status 200 12 ms - 111 
+[38;5;86m[HTTP][0m Request idempotency key: c0785703-63c1-4184-af9c-5284883fe0d2
+[38;5;86m[HTTP][0m [37m-->[39m [37mPOST[39m [37m/session[39m {"capabilities":{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}}
+[38;5;208m[AppiumDriver@8101][0m Calling AppiumDriver.createSession() with args: [null,null,{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}]
+[38;5;208m[AppiumDriver@8101][0m Event 'newSessionRequested' logged at 1759832821142 (15:27:01 GMT+0500 (West Kazakhstan Time))
+[38;5;112m[Appium][0m Attempting to find matching driver for automationName 'UiAutomator2' and platformName 'Android'
+[38;5;112m[Appium][0m The 'uiautomator2' driver was installed and matched caps.
+[38;5;112m[Appium][0m Will require it at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/build/index.js
+[38;5;208m[AppiumDriver@8101][0m Appium v2.11.5 creating new AndroidUiautomator2Driver (v3.8.0) session
+[38;5;208m[AppiumDriver@8101][0m Checking BaseDriver versions for Appium and AndroidUiautomator2Driver
+[38;5;208m[AppiumDriver@8101][0m Appium's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m AndroidUiautomator2Driver's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m Applying relaxed security to 'AndroidUiautomator2Driver' as per server command line argument. All insecure features will be enabled unless explicitly disabled by --deny-insecure
+[38;5;13m[AndroidUiautomator2Driver@903d][0m 
+[38;5;13m[AndroidUiautomator2Driver@903d][0m Creating session with W3C capabilities: {
+  "alwaysMatch": {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:udid": "emulator-5554",
+    "appium:deviceName": "emulator-5554",
+    "appium:systemPort": 8200,
+    "appium:chromeDriverPort": 11000,
+    "appium:mjpegServerPort": 7810,
+    "appium:avd": "Medium_Phone_API_35",
+    "appium:avdArgs": "-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio",
+    "appium:avdLaunchTimeout": 120000,
+    "appium:avdReadyTimeout": 120000,
+    "appium:appPackage": "kz.halyk.onlinebank.stage",
+    "appium:appActivity": "kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity",
+    "appium:app": "/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk",
+    "appium:autoGrantPermissions": true,
+    "appium:autoAcceptAlerts": true,
+    "appium:newCommandTimeout": 300
+  },
+  "firstMatch": [
+    {}
+  ]
+}
+[38;5;13m[AndroidUiautomator2Driver@903d][0m The following provided capabilities were not recognized by this driver:
+[38;5;13m[AndroidUiautomator2Driver@903d][0m   chromeDriverPort
+[38;5;13m[AndroidUiautomator2Driver@903d][0m   autoAcceptAlerts
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Session created with session id: 1b6507dc-41d3-46b6-83dd-918b293a780f
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Found 2 'build-tools' folders under '/Users/a00059362/Library/Android/sdk' (newest first):
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m     /Users/a00059362/Library/Android/sdk/build-tools/35.0.0
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m     /Users/a00059362/Library/Android/sdk/build-tools/34.0.0
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Emulator 'Medium_Phone_API_35' is not running: Error getting AVD with retry. Original error: Condition unmet after 5077 ms. Timing out.
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Launching Emulator with AVD Medium_Phone_API_35, launchTimeout 120000ms and readyTimeout 120000ms
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Using 'emulator' from '/Users/a00059362/Library/Android/sdk/emulator/emulator'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/emulator/emulator' with args: -avd Medium_Phone_API_35 -delay-adb -no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Storing crashdata in: /tmp/android-a00059362/emu-crash-35.1.21.db, detection is enabled for process: 2780
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Android emulator version 35.1.21.0 (build_id 12325540) (CL:N/A)
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Graphics backend: gfxstream
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Found systemPath /Users/a00059362/Library/Android/sdk/system-images/android-35/google_apis_playstore/x86_64/
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] WARNING | Please update the emulator to one that supports the feature(s): AndroidVirtualizationFramework
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Storing crashdata in: /tmp/android-a00059362/emu-crash-35.1.21.db, detection is enabled for process: 2780
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Duplicate loglines will be removed, if you wish to see each individual line launch with the -log-nofilter flag.
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] WARNING | Emualtor does not support more than 6 cores. Number of cores set to 6
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] library_mode swiftshader_indirect gpu mode swiftshader_indirect
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Initializing hardware OpenGLES emulation support
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] android_startOpenglesRenderer: gpu infoGPU #1
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Make: 1002
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Model: 7340
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Device ID: 7340
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] GPU #2
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Make: 1002
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Model: 7340
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT]   Device ID: 7340
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.566212 a721340 HealthMonitor.cpp:279] HealthMonitor disabled.
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.567092 a721340 VulkanDispatch.cpp:74] initIcdPaths: ICD set to 'swiftshader', using Swiftshader ICD
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.567232 a721340 VulkanDispatch.cpp:43] Setting ICD filenames for the loader = /Users/a00059362/Library/Android/sdk/emulator/qemu/darwin-x86_64/lib64/vulkan/vk_swiftshader_icd.json:/Users/a00059362/Library/Android/sdk/emulator/lib64/vulkan/vk_swiftshader_icd.json
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] cannot add library /Users/a00059362/Library/Android/sdk/emulator/qemu/darwin-x86_64/lib64/vulkan/libvulkan.dylib: failed
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] added library /Users/a00059362/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] W1007 15:27:08.600406 a721340 VkCommonOperations.cpp:1022] Selecting Vulkan device: SwiftShader Device (Subzero), Version: 1.2.0
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] initialize: Supports id properties, got a vulkan device UUID
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746348 a721340 VkCommonOperations.cpp:1361] Initializing VkEmulation features:
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746392 a721340 VkCommonOperations.cpp:1362]     glInteropSupported: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746409 a721340 VkCommonOperations.cpp:1363]     useDeferredCommands: true
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746416 a721340 VkCommonOperations.cpp:1365]     createResourceWithRequirements: true
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746425 a721340 VkCommonOperations.cpp:1366]     useVulkanComposition: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746431 a721340 VkCommonOperations.cpp:1367]     useVulkanNativeSwapchain: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746437 a721340 VkCommonOperations.cpp:1368]     enable guestRenderDoc: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746443 a721340 VkCommonOperations.cpp:1369]     ASTC LDR emulation mode: 2
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746450 a721340 VkCommonOperations.cpp:1370]     enable ETC2 emulation: true
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746457 a721340 VkCommonOperations.cpp:1371]     enable Ycbcr emulation: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746463 a721340 VkCommonOperations.cpp:1372]     guestVulkanOnly: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.746470 a721340 VkCommonOperations.cpp:1373]     useDedicatedAllocations: false
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.748148 a721340 FrameBuffer.cpp:505] Graphics Adapter Vendor Google (Google Inc. (Google))
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.748175 a721340 FrameBuffer.cpp:506] Graphics Adapter Android Emulator OpenGL ES Translator (ANGLE (Google, Vulkan 1.2.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver-5.0.0))
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.748184 a721340 FrameBuffer.cpp:507] Graphics API Version OpenGL ES 3.0 (OpenGL ES 3.1.0 (ANGLE 2.1.2 git hash: 1f0534893540))
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.748192 a721340 FrameBuffer.cpp:508] Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_packed_depth_stencil GL_OES_vertex_half_float GL_OES_standard_derivatives GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_OVR_multiview2 GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 GL_EXT_draw_buffers_indexed GL_EXT_clip_cull_distance 
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.748201 a721340 FrameBuffer.cpp:509] Graphics Device Extensions N/A
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Sending adb public key [QAAAAMExGvq/IcsSq1qUMGExFmZ5RENGd4RvZsUPAsM4EcaN3mhT3noAx6rYbLYeRuSs8DxIbvsBmdF+xlyquUWgt4XIs4y2EH75b8Ic8O9FWRid5uWyBT9dA6JXjJGoaAHUk2k8La0ittnQGebV91m78lm61vjBidS+CAOtvqNwAD56D80fDXX4gY78wVIRCKHGJavZchlaAtsxq/+gVXhIOtFR8vPkhwBBzPB8z73/0zIEMT4+ARG9i8vgEkfxp+zF2Zrxb2+mGAfIn804o8qEo0JeRPG52mxJyoGgfcYzftqdUUIm3vpOkV2htvNTcOODe+VRtsG8tBSNXwpqkWJPTnTrvUnLqb2LyU63u1vyH3uYecF0a/c1AA6QHQkQqRM2EYRnF2aT3BGTh5HiOc1XtN2rN/vwK0+71xVI3+63XbsKiSwCGEch5DRbwukdyFTi1SnVs0Z+YqcBZQX2nZ97d48feZ+PZ0QrbVFswt8Ds3prdkn4wlmkQLk+54XuscKnoYAz8HvoAwt3JlkWnqFW8AjYrmH5AS9avtuF5sjKMNu4cz9/tVnXArkaVcCUZW/rJh1R5TScI7bzfmJPfZehV0xjVBEfn7oUQbJx1eE/+uqRnA/bShMLe5l3hfEZeIr/AIQcLvuSvyfEC3NIDVjZsIrIEGTP3hl6XgmbcVYxGzsd46ruIAEAAQA= a00059362@unknown]
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Monitoring duration of emulator setup.
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] WARNING | The emulator now requires a signed jwt token for gRPC access! Use the -grpc flag if you really want an open unprotected grpc port
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Using security allow list from: /Users/a00059362/Library/Android/sdk/emulator/lib/emulator_access.json
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] WARNING | *** Basic token auth should only be used by android-studio ***
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | The active JSON Web Key Sets can be found here: /Users/a00059362/Library/Caches/TemporaryItems/avd/running/2780/jwks/ffeb8016-eccb-4b53-bbea-05da74270ab1/active.jwk
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Scanning /Users/a00059362/Library/Caches/TemporaryItems/avd/running/2780/jwks/ffeb8016-eccb-4b53-bbea-05da74270ab1 for jwk keys.
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Started GRPC server at 127.0.0.1:8554, security: Local, auth: +token
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Advertising in: /Users/a00059362/Library/Caches/TemporaryItems/avd/running/pid_2780.ini
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.949098 83f3000 FrameBuffer.cpp:2884] Setting display: 0 configuration to: 1080x2400, dpi: 420x420 
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] I1007 15:27:08.949149 83f3000 FrameBuffer.cpp:2897] setDisplayActiveConfig 0
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Cold boot: requested by the user
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] WARNING | Cold boot: requested by the user
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Activated packet streamer for bluetooth emulation
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m No connected devices have been detected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 0 emulators connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Emulator 'Medium_Phone_API_35' not running
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Connected devices: [{"udid":"emulator-5554","state":"device"}]
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m 1 emulator connected
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Overriding /Users/a00059362/.emulator_console_auth_token with an empty string to avoid telnet authentication for emulator commands
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Executing Emulator console command: avd name
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Found emulator 'Medium_Phone_API_35' on port 5554
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 wait-for-device'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting up to 119920ms for the emulator to be ready
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.sdk'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.sdk': 35
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting device platform version
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.release'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.release': 15
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Device API level: 35
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Waiting for emulator startup. Intermediate state: cmd: Can't find service: reboot_readiness
+
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd reboot_readiness check-subsystems-state --list-blocking'
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Using device: emulator-5554
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;56m[1b6507dc][0m[38;5;123m[BaseDriver][0m Using local app '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk'
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Checking whether app is actually present
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.sdk'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.sdk': 35
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting device platform version
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.release'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.release': 15
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Device API level: 35
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Relaxing hidden api policy
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings put global hidden_api_policy_pre_p_apps 1;settings put global hidden_api_policy_p_apps 1;settings put global hidden_api_policy 1''
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 wait-for-device'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell echo ping'
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Pushing settings apk to the device...
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.settings'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package io.appium.settings'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Using 'aapt2' from '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Reading package manifest: '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2 dump badging /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.settings' is greater or equal to the application version name ('5.12.13' >= '5.12.13')
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m There is no need to install/upgrade '/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd notification allow_listener io.appium.settings/.NLService'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell appops set io.appium.settings PROJECT_MEDIA allow'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;56m[1b6507dc][0m[38;5;78m[SettingsApp][0m Starting Appium Settings app
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER'
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Error: Cannot start the 'io.appium.settings' application. Consider checking the driver's troubleshooting documentation. Original error: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER' exited with code 1'; Command output: Error type 3
+Error: Activity class {io.appium.settings/io.appium.settings.Settings} does not exist.
+
+    at ADB.startApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-adb/lib/tools/apk-utils.js:224:11)
+    at SettingsApp.requireRunning (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/lib/client.js:75:5)
+    at AndroidUiautomator2Driver.pushSettingsApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/utils.js:252:5)
+    at AndroidUiautomator2Driver.initDevice (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/common.js:228:5)
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Deleting UiAutomator2 session
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings/.recorder.RecorderService'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop kz.halyk.onlinebank.stage'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 7810 
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:7810'
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Unable to remove MJPEG server port forward: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp\:7810' exited with code 1'; Command output: adb: error: listener 'tcp:7810' not found
+
+[38;5;56m[1b6507dc][0m[38;5;13m[AndroidUiautomator2Driver@903d][0m Restoring hidden api policy to the device default configuration
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy''
+[38;5;56m[1b6507dc][0m[38;5;208m[AppiumDriver@8101][0m Event 'newSessionStarted' logged at 1759832958231 (15:29:18 GMT+0500 (West Kazakhstan Time))
+[38;5;56m[1b6507dc][0m[38;5;208m[AppiumDriver@8101][0m Encountered internal error running command: Error: Cannot start the 'io.appium.settings' application. Consider checking the driver's troubleshooting documentation. Original error: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER' exited with code 1'; Command output: Error type 3
+Error: Activity class {io.appium.settings/io.appium.settings.Settings} does not exist.
+
+    at ADB.startApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-adb/lib/tools/apk-utils.js:224:11)
+    at SettingsApp.requireRunning (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/lib/client.js:75:5)
+    at AndroidUiautomator2Driver.pushSettingsApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/utils.js:252:5)
+    at AndroidUiautomator2Driver.initDevice (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/common.js:228:5)
+[38;5;56m[1b6507dc][0m[38;5;86m[HTTP][0m <-- POST /session 500 137103 ms - 1528 
+[38;5;86m[HTTP][0m Request idempotency key: a578c8b0-fe7d-41ec-991a-4850719d6122
+[38;5;86m[HTTP][0m [37m-->[39m [37mPOST[39m [37m/session[39m {"capabilities":{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}}
+[38;5;208m[AppiumDriver@8101][0m Calling AppiumDriver.createSession() with args: [null,null,{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}]
+[38;5;208m[AppiumDriver@8101][0m Event 'newSessionRequested' logged at 1759832960327 (15:29:20 GMT+0500 (West Kazakhstan Time))
+[38;5;112m[Appium][0m Attempting to find matching driver for automationName 'UiAutomator2' and platformName 'Android'
+[38;5;112m[Appium][0m The 'uiautomator2' driver was installed and matched caps.
+[38;5;112m[Appium][0m Will require it at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/build/index.js
+[38;5;208m[AppiumDriver@8101][0m Appium v2.11.5 creating new AndroidUiautomator2Driver (v3.8.0) session
+[38;5;208m[AppiumDriver@8101][0m Checking BaseDriver versions for Appium and AndroidUiautomator2Driver
+[38;5;208m[AppiumDriver@8101][0m Appium's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m AndroidUiautomator2Driver's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m Applying relaxed security to 'AndroidUiautomator2Driver' as per server command line argument. All insecure features will be enabled unless explicitly disabled by --deny-insecure
+[38;5;2m[AndroidUiautomator2Driver@9882][0m 
+[38;5;2m[AndroidUiautomator2Driver@9882][0m Creating session with W3C capabilities: {
+  "alwaysMatch": {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:udid": "emulator-5554",
+    "appium:deviceName": "emulator-5554",
+    "appium:systemPort": 8200,
+    "appium:chromeDriverPort": 11000,
+    "appium:mjpegServerPort": 7810,
+    "appium:avd": "Medium_Phone_API_35",
+    "appium:avdArgs": "-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio",
+    "appium:avdLaunchTimeout": 120000,
+    "appium:avdReadyTimeout": 120000,
+    "appium:appPackage": "kz.halyk.onlinebank.stage",
+    "appium:appActivity": "kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity",
+    "appium:app": "/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk",
+    "appium:autoGrantPermissions": true,
+    "appium:autoAcceptAlerts": true,
+    "appium:newCommandTimeout": 300
+  },
+  "firstMatch": [
+    {}
+  ]
+}
+[38;5;2m[AndroidUiautomator2Driver@9882][0m The following provided capabilities were not recognized by this driver:
+[38;5;2m[AndroidUiautomator2Driver@9882][0m   chromeDriverPort
+[38;5;2m[AndroidUiautomator2Driver@9882][0m   autoAcceptAlerts
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Session created with session id: d7ac6b81-f9bd-481c-b789-4c4b76a24afe
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Connected devices: [{"udid":"emulator-5554","state":"device"}]
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m 1 emulator connected
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Executing Emulator console command: avd name
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Found emulator 'Medium_Phone_API_35' on port 5554
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Not launching AVD because it is already running.
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Using device: emulator-5554
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;78m[d7ac6b81][0m[38;5;123m[BaseDriver][0m Using local app '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk'
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Checking whether app is actually present
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.sdk'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.sdk': 35
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Getting device platform version
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.release'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.release': 15
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Device API level: 35
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Relaxing hidden api policy
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings put global hidden_api_policy_pre_p_apps 1;settings put global hidden_api_policy_p_apps 1;settings put global hidden_api_policy 1''
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 wait-for-device'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell echo ping'
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Pushing settings apk to the device...
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.settings'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package io.appium.settings'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Using 'aapt2' from '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Reading package manifest: '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2 dump badging /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.settings' is greater or equal to the application version name ('5.12.13' >= '5.12.13')
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m There is no need to install/upgrade '/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd notification allow_listener io.appium.settings/.NLService'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell appops set io.appium.settings PROJECT_MEDIA allow'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;78m[d7ac6b81][0m[38;5;78m[SettingsApp][0m Starting Appium Settings app
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER'
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Error: Cannot start the 'io.appium.settings' application. Consider checking the driver's troubleshooting documentation. Original error: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER' exited with code 1'; Command output: Error type 3
+Error: Activity class {io.appium.settings/io.appium.settings.Settings} does not exist.
+
+    at ADB.startApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-adb/lib/tools/apk-utils.js:224:11)
+    at SettingsApp.requireRunning (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/lib/client.js:75:5)
+    at AndroidUiautomator2Driver.pushSettingsApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/utils.js:252:5)
+    at AndroidUiautomator2Driver.initDevice (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/common.js:228:5)
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Deleting UiAutomator2 session
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings/.recorder.RecorderService'
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop kz.halyk.onlinebank.stage'
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Boot completed in 156538 ms
+[38;5;56m[1b6507dc][0m[38;5;229m[ADB][0m [AVD OUTPUT] INFO    | Increasing screen off timeout, logcat buffer size to 2M.
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 7810 
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:7810'
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Unable to remove MJPEG server port forward: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp\:7810' exited with code 1'; Command output: adb: error: listener 'tcp:7810' not found
+
+[38;5;78m[d7ac6b81][0m[38;5;2m[AndroidUiautomator2Driver@9882][0m Restoring hidden api policy to the device default configuration
+[38;5;78m[d7ac6b81][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy''
+[38;5;78m[d7ac6b81][0m[38;5;208m[AppiumDriver@8101][0m Event 'newSessionStarted' logged at 1759832991139 (15:29:51 GMT+0500 (West Kazakhstan Time))
+[38;5;78m[d7ac6b81][0m[38;5;208m[AppiumDriver@8101][0m Encountered internal error running command: Error: Cannot start the 'io.appium.settings' application. Consider checking the driver's troubleshooting documentation. Original error: Error executing adbExec. Original error: 'Command '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER' exited with code 1'; Command output: Error type 3
+Error: Activity class {io.appium.settings/io.appium.settings.Settings} does not exist.
+
+    at ADB.startApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-adb/lib/tools/apk-utils.js:224:11)
+    at SettingsApp.requireRunning (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/lib/client.js:75:5)
+    at AndroidUiautomator2Driver.pushSettingsApp (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/utils.js:252:5)
+    at AndroidUiautomator2Driver.initDevice (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-android-driver/lib/commands/device/common.js:228:5)
+[38;5;78m[d7ac6b81][0m[38;5;86m[HTTP][0m <-- POST /session 500 30830 ms - 1528 
+[38;5;86m[HTTP][0m Request idempotency key: 8f53f6ff-d59f-4009-b553-9c48dabc1a31
+[38;5;86m[HTTP][0m [37m-->[39m [37mPOST[39m [37m/session[39m {"capabilities":{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}}
+[38;5;208m[AppiumDriver@8101][0m Calling AppiumDriver.createSession() with args: [null,null,{"firstMatch":[{}],"alwaysMatch":{"appium:automationName":"UiAutomator2","platformName":"Android","appium:udid":"emulator-5554","appium:deviceName":"emulator-5554","appium:systemPort":8200,"appium:chromeDriverPort":11000,"appium:mjpegServerPort":7810,"appium:avd":"Medium_Phone_API_35","appium:avdArgs":"-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio","appium:avdLaunchTimeout":120000,"appium:avdReadyTimeout":120000,"appium:appPackage":"kz.halyk.onlinebank.stage","appium:appActivity":"kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity","appium:app":"/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk","appium:autoGrantPermissions":true,"appium:autoAcceptAlerts":true,"appium:newCommandTimeout":300}}]
+[38;5;208m[AppiumDriver@8101][0m Event 'newSessionRequested' logged at 1759832993192 (15:29:53 GMT+0500 (West Kazakhstan Time))
+[38;5;112m[Appium][0m Attempting to find matching driver for automationName 'UiAutomator2' and platformName 'Android'
+[38;5;112m[Appium][0m The 'uiautomator2' driver was installed and matched caps.
+[38;5;112m[Appium][0m Will require it at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver
+[38;5;112m[Appium][0m Requiring driver at /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/build/index.js
+[38;5;208m[AppiumDriver@8101][0m Appium v2.11.5 creating new AndroidUiautomator2Driver (v3.8.0) session
+[38;5;208m[AppiumDriver@8101][0m Checking BaseDriver versions for Appium and AndroidUiautomator2Driver
+[38;5;208m[AppiumDriver@8101][0m Appium's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m AndroidUiautomator2Driver's BaseDriver version is 9.11.5
+[38;5;208m[AppiumDriver@8101][0m Applying relaxed security to 'AndroidUiautomator2Driver' as per server command line argument. All insecure features will be enabled unless explicitly disabled by --deny-insecure
+[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m 
+[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Creating session with W3C capabilities: {
+  "alwaysMatch": {
+    "platformName": "Android",
+    "appium:automationName": "UiAutomator2",
+    "appium:udid": "emulator-5554",
+    "appium:deviceName": "emulator-5554",
+    "appium:systemPort": 8200,
+    "appium:chromeDriverPort": 11000,
+    "appium:mjpegServerPort": 7810,
+    "appium:avd": "Medium_Phone_API_35",
+    "appium:avdArgs": "-no-snapshot-load -no-snapshot-save -gpu swiftshader_indirect -no-window -no-audio",
+    "appium:avdLaunchTimeout": 120000,
+    "appium:avdReadyTimeout": 120000,
+    "appium:appPackage": "kz.halyk.onlinebank.stage",
+    "appium:appActivity": "kz.halyk.onlinebank.ui_release4.screens.auth.AuthActivity",
+    "appium:app": "/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk",
+    "appium:autoGrantPermissions": true,
+    "appium:autoAcceptAlerts": true,
+    "appium:newCommandTimeout": 300
+  },
+  "firstMatch": [
+    {}
+  ]
+}
+[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m The following provided capabilities were not recognized by this driver:
+[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m   chromeDriverPort
+[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m   autoAcceptAlerts
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Session created with session id: 42183807-6291-4bce-be8f-c39b27bade0a
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Trying to find 'Medium_Phone_API_35' emulator
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting connected emulators
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting connected devices
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Connected devices: [{"udid":"emulator-5554","state":"device"}]
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m 1 emulator connected
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Executing Emulator console command: avd name
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Found emulator 'Medium_Phone_API_35' on port 5554
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Not launching AVD because it is already running.
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Using device: emulator-5554
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Using 'adb' from '/Users/a00059362/Library/Android/sdk/platform-tools/adb'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 start-server'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Setting device id to emulator-5554
+[38;5;227m[42183807][0m[38;5;123m[BaseDriver][0m Using local app '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Checking whether app is actually present
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.sdk'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.sdk': 35
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting device platform version
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell getprop ro.build.version.release'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Current device property 'ro.build.version.release': 15
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Device API level: 35
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Relaxing hidden api policy
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings put global hidden_api_policy_pre_p_apps 1;settings put global hidden_api_policy_p_apps 1;settings put global hidden_api_policy 1''
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 wait-for-device'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell echo ping'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Pushing settings apk to the device...
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Using 'aapt2' from '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Reading package manifest: '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2 dump badging /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.settings' is greater or equal to the application version name ('5.12.13' >= '5.12.13')
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m There is no need to install/upgrade '/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/io.appium.settings/apks/settings_apk-debug.apk'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd notification allow_listener io.appium.settings/.NLService'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell appops set io.appium.settings PROJECT_MEDIA allow'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;78m[SettingsApp][0m Starting Appium Settings app
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am start -n io.appium.settings/.Settings -a android.intent.action.MAIN -c android.intent.category.LAUNCHER'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings'
+[38;5;227m[42183807][0m[38;5;160m[Logcat][0m Starting logs capture with command: /Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 logcat -v threadtime
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Forwarding UiAutomator2 Server port 6790 to local port 8200
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m MJPEG broadcasting requested, forwarding MJPEG server port 7810 to local port 7810
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Forwarding system: 7810 to device: 7810
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward tcp:7810 tcp:7810'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Forwarding system: 8200 to device: 6790
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward tcp:8200 tcp:6790'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting package info for 'io.appium.uiautomator2.server'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package io.appium.uiautomator2.server'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting install status for io.appium.uiautomator2.server.test
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Checking app cert for /Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd package list packages'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m 'io.appium.uiautomator2.server.test' is installed
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Using 'apksigner.jar' from '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/lib/apksigner.jar'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Starting apksigner: /Library/Java/JavaVirtualMachines/jdk-23.jdk/Contents/Home/bin/java -Xmx1024M -Xss1m -jar /Users/a00059362/Library/Android/sdk/build-tools/35.0.0/lib/apksigner.jar verify --print-certs '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Reading package manifest: '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2 dump badging /Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-uiautomator2-server/apks/appium-uiautomator2-server-v7.0.25.apk'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m The version name of the installed 'io.appium.uiautomator2.server' is greater or equal to the application version name ('7.0.25' >= '7.0.25')
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Server packages status: [{"installState":"sameVersionInstalled","appPath":"/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-uiautomator2-server/apks/appium-uiautomator2-server-v7.0.25.apk","appId":"io.appium.uiautomator2.server"},{"installState":"sameVersionInstalled","appPath":"/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-uiautomator2-server/apks/appium-uiautomator2-server-debug-androidTest.apk","appId":"io.appium.uiautomator2.server.test"}]
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Server packages are not going to be (re)installed
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Waiting up to 30000ms for services to be available
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell pm list instrumentation'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Instrumentation target 'io.appium.uiautomator2.server.test/androidx.test.runner.AndroidJUnitRunner' is available
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Adding packages ["io.appium.settings","io.appium.uiautomator2.server","io.appium.uiautomator2.server.test"] to Doze whitelist
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Got the following command chunks to execute: [["dumpsys","deviceidle","whitelist","+io.appium.settings",";","dumpsys","deviceidle","whitelist","+io.appium.uiautomator2.server",";","dumpsys","deviceidle","whitelist","+io.appium.uiautomator2.server.test",";"]]
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys deviceidle whitelist +io.appium.settings ; dumpsys deviceidle whitelist +io.appium.uiautomator2.server ; dumpsys deviceidle whitelist +io.appium.uiautomator2.server.test ;'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m apksigner stdout: Signer #1 certificate DN: CN=onlinebank
+Signer #1 certificate SHA-256 digest: d183c42ba3ae85169a86412ef52c49a62715d19441de24fb6150c80e44e9690d
+Signer #1 certificate SHA-1 digest: 803e04e232d6c26880cde1e22f1d7641c08e6c17
+Signer #1 certificate MD5 digest: 1dc1a12057b45a05e0ab92b0bb27c8f6
+
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk' is signed with a non-default certificate
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting package info for 'kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Reading package manifest: '/Users/a00059362/Library/Android/sdk/build-tools/35.0.0/aapt2 dump badging '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk''
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m The version name of the installed 'kz.halyk.onlinebank.stage' is greater or equal to the application version name ('1.0.1431' >= '1.0.1431')
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m There is no need to install/upgrade '/Users/a00059362/Desktop/Новая папка/onlineduken/app/app.apk'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Performing fast reset on 'kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Getting install status for kz.halyk.onlinebank.stage
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell cmd package list packages'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m 'kz.halyk.onlinebank.stage' is installed
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell pm clear kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys package kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Retrieving requested permissions
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Retrieved 31 permissions from requested group
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Retrieving granted permissions
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Retrieved 19 permissions from install,runtime groups
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Granting permissions ["android.permission.POST_NOTIFICATIONS","android.permission.ACCESS_FINE_LOCATION","android.permission.READ_PHONE_NUMBERS","android.permission.BLUETOOTH_CONNECT","android.permission.READ_EXTERNAL_STORAGE","android.permission.ACCESS_COARSE_LOCATION","android.permission.READ_PHONE_STATE","android.permission.CALL_PHONE","android.permission.CAMERA","android.permission.WRITE_EXTERNAL_STORAGE","android.permission.RECORD_AUDIO","android.permission.READ_CONTACTS"] to 'kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Got the following command chunks to execute: [["pm","grant","kz.halyk.onlinebank.stage","android.permission.POST_NOTIFICATIONS",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.ACCESS_FINE_LOCATION",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.READ_PHONE_NUMBERS",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.BLUETOOTH_CONNECT",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.READ_EXTERNAL_STORAGE",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.ACCESS_COARSE_LOCATION",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.READ_PHONE_STATE",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.CALL_PHONE",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.CAMERA",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.WRITE_EXTERNAL_STORAGE",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.RECORD_AUDIO",";","pm","grant","kz.halyk.onlinebank.stage","android.permission.READ_CONTACTS",";"]]
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell pm grant kz.halyk.onlinebank.stage android.permission.POST_NOTIFICATIONS ; pm grant kz.halyk.onlinebank.stage android.permission.ACCESS_FINE_LOCATION ; pm grant kz.halyk.onlinebank.stage android.permission.READ_PHONE_NUMBERS ; pm grant kz.halyk.onlinebank.stage android.permission.BLUETOOTH_CONNECT ; pm grant kz.halyk.onlinebank.stage android.permission.READ_EXTERNAL_STORAGE ; pm grant kz.halyk.onlinebank.stage android.permission.ACCESS_COARSE_LOCATION ; pm grant kz.halyk.onlinebank.stage android.permission.READ_PHONE_STATE ; pm grant kz.halyk.onlinebank.stage android.permission.CALL_PHONE ; pm grant kz.halyk.onlinebank.stage android.permission.CAMERA ; pm grant kz.halyk.onlinebank.stage android.permission.WRITE_EXTERNAL_STORAGE ; pm grant kz.halyk.onlinebank.stage android.permission.RECORD_AUDIO ; pm grant kz.halyk.onlinebank.stage android.permission.READ_CONTACTS ;'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Performed fast reset on the installed 'kz.halyk.onlinebank.stage' application (stop and clear)
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Performing shallow cleanup of automation leftovers
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m No obsolete sessions have been detected (socket hang up)
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop io.appium.uiautomator2.server'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop io.appium.uiautomator2.server.test'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Starting UIAutomator2 server 7.0.25
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Using UIAutomator2 server from '/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-uiautomator2-server/apks/appium-uiautomator2-server-v7.0.25.apk' and test from '/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/node_modules/appium-uiautomator2-server/apks/appium-uiautomator2-server-debug-androidTest.apk'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Waiting up to 30000ms for UiAutomator2 to be online...
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Creating ADB subprocess with args: ["-P","5037","-s","emulator-5554","shell","am","instrument","-w","-e","disableAnalytics","true","io.appium.uiautomator2.server.test/androidx.test.runner.AndroidJUnitRunner"]
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/status' to command name 'getStatus'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Proxying [GET /status] to [GET http://127.0.0.1:8200/status] with no body
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m socket hang up
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Deleting UiAutomator2 session
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Deleting UiAutomator2 server session
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Matched '/' to command name 'deleteSession'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Did not get confirmation UiAutomator2 deleteSession worked; Error was: UnknownError: An unknown server-side error occurred while processing the command. Original error: Trying to proxy a session command without session id
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m [Instrumentation] The process has exited with code null, signal SIGTERM
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings/.recorder.RecorderService'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop kz.halyk.onlinebank.stage'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 8200 
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:8200'
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 7810 
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:7810'
+[38;5;227m[42183807][0m[38;5;-41m[AndroidUiautomator2Driver@e3c5][0m Restoring hidden api policy to the device default configuration
+[38;5;227m[42183807][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy''
+[38;5;227m[42183807][0m[38;5;160m[Logcat][0m Stopping logcat capture
+[38;5;227m[42183807][0m[38;5;208m[AppiumDriver@8101][0m Event 'newSessionStarted' logged at 1759833124728 (15:32:04 GMT+0500 (West Kazakhstan Time))
+[38;5;227m[42183807][0m[38;5;208m[AppiumDriver@8101][0m Encountered internal error running command: Error: The instrumentation process cannot be initialized within 30000ms timeout. Make sure the application under test does not crash and investigate the logcat output. You could also try to increase the value of 'uiautomator2ServerLaunchTimeout' capability
+    at Object.errorWithException (/usr/local/lib/node_modules/appium/node_modules/@appium/support/lib/logging.js:41:45)
+    at Object.errorAndThrow (/usr/local/lib/node_modules/appium/node_modules/@appium/support/lib/logging.js:44:18)
+    at UiAutomator2Server.startSession (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/lib/uiautomator2.js:280:20)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at AndroidUiautomator2Driver.performSessionExecution (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/lib/driver.ts:618:5)
+    at AndroidUiautomator2Driver.startUiAutomator2Session (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/lib/driver.ts:674:5)
+    at AndroidUiautomator2Driver.createSession (/Users/a00059362/.appium/node_modules/appium-uiautomator2-driver/lib/driver.ts:407:22)
+    at AppiumDriver.createSession (/usr/local/lib/node_modules/appium/lib/appium.js:739:35)
+[38;5;227m[42183807][0m[38;5;86m[HTTP][0m <-- POST /session 500 131546 ms - 998 
+[38;5;112m[Appium][0m Received SIGTERM - shutting down
+[38;5;208m[AppiumDriver@8101][0m There are no active sessions for cleanup
+[38;5;86m[HTTP][0m Closing Appium HTTP server
+[38;5;86m[HTTP][0m Appium HTTP server has been succesfully closed after 1ms

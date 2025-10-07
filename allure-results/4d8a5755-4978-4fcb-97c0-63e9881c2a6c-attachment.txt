@@ -1,0 +1,2 @@
+WARNING  core.textfinder:textfinder.py:126 Элемент не найден за 1s: 'Платеж в обработке'
+WARNING  core.textfinder:textfinder.py:126 Элемент не найден за 1s: 'Платеж в обработке'

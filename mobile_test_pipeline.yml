@@ -1,0 +1,20 @@
+# .gitlab-ci.yml
+stages:
+  - test
+  - report
+
+mobile_tests:
+  stage: test
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - apk add --no-cache make
+    - make ci-test
+  artifacts:
+    when: always
+    paths:
+      - allure-results/
+      - junit.xml
+    reports:
+      junit: junit.xml
