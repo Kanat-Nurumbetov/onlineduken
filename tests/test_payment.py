@@ -22,7 +22,7 @@ def test_scan_qr_from_gallery(login, driver, clean_gallery_before_test, qr_png_o
 
 
     with allure.step("Открыть QR-сканер"):
-        nav.open("QR")
+        nav.find_tab_by_text("Qr")
 
     with allure.step("Загрузить QR из галереи"):
         scanner.tap_upload_from_gallery()

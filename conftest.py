@@ -24,7 +24,6 @@ else:
     raise RuntimeError(f"Не найден config/.env по пути: {ENV_PATH}")
 
 
-# ============ Вспомогательные функции ============
 def env_bool(name: str, default=False) -> bool:
     v = os.getenv(name)
     if v is None:
@@ -208,7 +207,6 @@ def _slug(nodeid: str) -> str:
     return re.sub(r'[^A-Za-z0-9_.-]+', '_', nodeid)
 
 
-# ============ Pytest hooks ============
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):
     outcome = yield
@@ -230,7 +228,6 @@ def pytest_runtest_setup(item):
         time.sleep(seconds)
 
 
-# ============ Session fixtures ============
 @pytest.fixture(scope="session")
 def test_platform():
     """Определение платформы для тестирования"""
@@ -325,7 +322,6 @@ def appium_service():
             proc.wait()
 
 
-# ============ Module fixtures ============
 @pytest.fixture(scope="module")
 def driver(request, appium_service, multi_platform):
     """Универсальный драйвер с поддержкой Docker, CI/CD и локального окружения"""

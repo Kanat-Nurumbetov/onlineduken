@@ -1,0 +1,4 @@
+[38;5;112m[Appium][0m Received SIGTERM - shutting down
+[38;5;71m[AppiumDriver@5590][0m There are no active sessions for cleanup
+[38;5;86m[HTTP][0m Closing Appium HTTP server
+[38;5;86m[HTTP][0m Appium HTTP server has been succesfully closed after 3ms

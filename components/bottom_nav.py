@@ -11,6 +11,9 @@ class BottomNav(BaseScreen):
     TAB_CART     = (By.ACCESSIBILITY_ID, "Корзина")
     TAB_MORE     = (By.ACCESSIBILITY_ID, "Еще")
 
+    def find_tab_by_text(self, text: str):
+        self.find_by_text_instant(text)
+
     _fallbacks = {
         # content-desc может меняться с локалью → используем regex через descriptionMatches
         "Главная": ('-android uiautomator',

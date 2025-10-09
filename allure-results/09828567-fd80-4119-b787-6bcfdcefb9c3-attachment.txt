@@ -1,0 +1,29 @@
+[38;5;194m[9617d3d4][0m[38;5;86m[HTTP][0m [37m-->[39m [37mDELETE[39m [37m/session/9617d3d4-68cb-4d13-84ae-cba6ae6a18e6[39m {}
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Calling AppiumDriver.deleteSession() with args: ["9617d3d4-68cb-4d13-84ae-cba6ae6a18e6"]
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m Event 'quitSessionRequested' logged at 1760012357006 (17:19:17 GMT+0500 (West Kazakhstan Time))
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m Removing session 9617d3d4-68cb-4d13-84ae-cba6ae6a18e6 from our master session list
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Deleting UiAutomator2 session
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Deleting UiAutomator2 server session
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Matched '/' to command name 'deleteSession'
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Proxying [DELETE /] to [DELETE http://127.0.0.1:8200/session/63437d54-3edc-450b-813f-fa60904ac120] with no body
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Got response with status 200: {"sessionId":"63437d54-3edc-450b-813f-fa60904ac120","value":null}
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m [Instrumentation] io.appium.uiautomator2.server.test.AppiumUiAutomator2Server:
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m [Instrumentation] The process has exited with code null, signal SIGTERM
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell dumpsys activity services io.appium.settings/.recorder.RecorderService'
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell am force-stop kz.halyk.onlinebank.stage'
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 8200 
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:8200'
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Removing forwarded port socket connection: 7810 
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 forward --remove tcp:7810'
+[38;5;194m[9617d3d4][0m[38;5;-74m[AndroidUiautomator2Driver@5be3][0m Restoring hidden api policy to the device default configuration
+[38;5;194m[9617d3d4][0m[38;5;229m[ADB][0m Running '/Users/a00059362/Library/Android/sdk/platform-tools/adb -P 5037 -s emulator-5554 shell 'settings delete global hidden_api_policy_pre_p_apps;settings delete global hidden_api_policy_p_apps;settings delete global hidden_api_policy''
+[38;5;194m[9617d3d4][0m[38;5;160m[Logcat][0m Stopping logcat capture
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m Event 'quitSessionFinished' logged at 1760012358380 (17:19:18 GMT+0500 (West Kazakhstan Time))
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m Received response: null
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m But deleting session, so not returning
+[38;5;194m[9617d3d4][0m[38;5;67m[AppiumDriver@c4ca][0m Responding to client with driver.deleteSession() result: null
+[38;5;194m[9617d3d4][0m[38;5;86m[HTTP][0m <-- DELETE /session/9617d3d4-68cb-4d13-84ae-cba6ae6a18e6 200 1375 ms - 14 
+[38;5;112m[Appium][0m Received SIGTERM - shutting down
+[38;5;67m[AppiumDriver@c4ca][0m There are no active sessions for cleanup
+[38;5;86m[HTTP][0m Closing Appium HTTP server
+[38;5;86m[HTTP][0m Appium HTTP server has been succesfully closed after 0ms

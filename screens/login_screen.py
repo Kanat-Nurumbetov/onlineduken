@@ -43,8 +43,14 @@ class LoginScreen(BaseScreen):
         button.click()
 
     def online_duken(self):
-        element = self.text.find_anywhere(self.ONLINE_DUKEN_TEXT, timeout=10)
+        # Вариант 1: С проверкой
+        element = self.find_by_text_instant("Duken")
         if element:
             element.click()
         else:
-            raise Exception(f"Элемент '{self.ONLINE_DUKEN_TEXT}' не найден на экране")
+            raise Exception(f"Элемент 'Duken' не найден на экране")
+        # element = self.text.find_anywhere(self.ONLINE_DUKEN_TEXT, timeout=10)
+        # if element:
+        #     element.click()
+        # else:
+        #     raise Exception(f"Элемент '{self.ONLINE_DUKEN_TEXT}' не найден на экране")
