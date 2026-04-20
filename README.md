@@ -1,0 +1,355 @@
+# OnlineDuken Mobile Automation
+
+Hybrid mobile automation project for:
+- `Halyk` stage Android APK
+- `OnlineDuken` WebView flow
+- local Android execution
+- BrowserStack App Automate execution for Android and iOS-ready configuration
+
+## Goals
+
+- keep the project git-ready from day one;
+- run `smoke` tests automatically on pushes;
+- check test environment availability before running CI smoke;
+- keep all other tests manual-only;
+- support hybrid app automation:
+  - native Android/iOS shell
+  - WebView inside `OnlineDuken`
+- preserve working context in versioned Markdown files so the project can be resumed without losing history
+
+## Stack
+
+- Python
+- `pytest`
+- `Appium`
+- BrowserStack App Automate
+
+## Project Layout
+
+```text
+mobile_automation/
+  config.py
+  driver_factory.py
+  healthcheck.py
+  flows.py
+  pages/
+    native.py
+    web.py
+tests/
+  smoke/
+  manual/
+.github/workflows/
+```
+
+Important context files in project root:
+- `HANDOFF_ONLINEDUKEN.md`
+- `HISTORY_CHRONOLOGY.md`
+- `ARTIFACTS_INDEX.md`
+- `TEST_CASES_SMOKE_DRAFT.md`
+- `PROJECT_PROGRESS.md`
+- `INTERNAL_AUTH_SETUP.md`
+- `SMOKE_RUN_REPORT_2026-04-19.md`
+
+## Setup
+
+1. Create a virtual environment.
+2. Install dependencies:
+
+```bash
+pip install -e .
+```
+
+3. Copy `.env.example` to `.env` and fill values.
+4. For internal-auth / parallel setup, use `.env.internal.example` as the base template.
+
+## Running Tests Locally
+
+Recommended local launcher:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_local_smoke.ps1 -Workers 1 -SafeSmoke
+```
+
+What this launcher does automatically:
+- installs Python dependencies if needed
+- installs Appium globally if missing
+- installs the `uiautomator2` Appium driver if missing
+- starts `adb`
+- starts the Android emulator if it is not running
+- starts fresh Appium server instances on the required ports
+- exports local env vars such as `TARGET`, `PLATFORM`, `ONLINEDUKEN_ENTRY_MODE`, and `LOCAL_ANDROID_DEVICE_MATRIX`
+
+Bootstrap only, without running tests:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_local_smoke.ps1 -Workers 1 -BootstrapOnly
+```
+
+Smoke:
+
+```bash
+pytest -m smoke
+```
+
+Latest verified full local smoke command:
+
+```powershell
+$env:TARGET='local'
+$env:PLATFORM='android'
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:CLIENT_BIN='900423400509'
+py -3.12 -m pytest -m smoke -q -s -ra
+```
+
+Latest verified QR-only smoke command:
+
+```powershell
+$env:TARGET='local'
+$env:PLATFORM='android'
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:CLIENT_BIN='900423400509'
+py -3.12 -m pytest tests\smoke\test_smoke_suite.py -k "qr_payment_flow" -q -s -ra
+```
+
+Parallel smoke on BrowserStack:
+
+```bash
+$env:TARGET='browserstack'
+pytest -m smoke -n 2
+```
+
+Important:
+- local parallel execution is intentionally blocked when `TARGET=local`
+- the current local setup uses one emulator/Appium device session, so `-n > 1` on the same emulator would be unstable rather than truly parallel
+- the current safe-smoke design is parallel-ready for BrowserStack workers, where each worker gets its own isolated mobile session
+- if `ONLINEDUKEN_ENTRY_MODE=token`, workers can share one bootstrap-resolved auth URL through the internal login endpoint, `B2B_AUTH_FETCH_COMMAND`, `B2B_AUTH_URL`, or the runtime cache file
+
+Manual:
+
+```bash
+pytest -m manual
+```
+
+Single platform examples:
+
+```bash
+$env:TARGET='local'
+$env:PLATFORM='android'
+pytest -m smoke
+```
+
+Fast `OnlineDuken` entry by auth URL/token:
+
+```bash
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:B2B_AUTH_URL='https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=...'
+pytest tests/smoke/test_smoke_suite.py::test_smoke_onlineduken_entry -q -s
+```
+
+You can also provide only the token:
+
+```bash
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:B2B_OB_AUTH_TOKEN='...'
+pytest -m smoke
+```
+
+Internal login endpoint bootstrap:
+
+```bash
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:TARGET='browserstack'
+$env:B2B_INTERNAL_LOGIN_URL='https://testapi.onlinebank.kz/internal/internal/users/login-user-by-id-and-contract/...?...'
+$env:B2B_INTERNAL_CLIENT_ID='...'
+$env:B2B_INTERNAL_CLIENT_SECRET='...'
+pytest -m smoke -n 2
+```
+
+This path posts `client_id`, `client_secret`, and `grant_type=internal`, then tries to extract either:
+- a ready auth URL
+- `ob_auth_token`
+- `token`
+- `access_token`
+
+If only a token is returned, the framework converts it into:
+- `https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=...`
+
+QR smoke generation:
+- the project can now generate QR PNG assets from templates instead of requiring a manually prepared file
+- supported QR smoke template types:
+  - `common`
+  - `megapolis`
+- required business input:
+  - `CLIENT_BIN`
+- optional QR template inputs:
+  - `QR_AMOUNT`
+  - `QR_INVOICE_ID`
+  - `QR_INVOICE_TITLE`
+  - `QR_MEGAPOLIS_CONTRACT`
+- current local QR smoke implementation:
+  - enters `OnlineDuken`
+  - opens the native `QR` tab
+  - taps the native gallery button
+  - selects the first image from Android Photo Picker
+  - waits for the native payment screen
+  - taps the primary action on the native signing/payment screen
+  - verifies transition to the confirmation stage
+- latest validated local QR result with `CLIENT_BIN=900423400509`:
+  - `common` -> passed
+  - `megapolis` -> passed
+- QR payloads are generated with unique numeric values per run so the main QR smoke does not accidentally reuse an old QR and fall into the business flow for re-signing a pending payment
+- current BrowserStack note:
+  - local gallery upload is implemented
+  - BrowserStack media upload still needs a dedicated upload path before QR smoke can run there end-to-end
+
+Local multi-device parallel example:
+
+```bash
+$env:LOCAL_ANDROID_DEVICE_MATRIX='emulator-5554|http://127.0.0.1:4723;emulator-5556|http://127.0.0.1:4725'
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+pytest -m smoke -n 2
+```
+
+Current practical note:
+- the project now supports worker-to-device mapping for real local parallel runs
+- on this machine, a second local AVD/Appium slot was brought up successfully
+- however, long local parallel runs are still less stable than desired, so BrowserStack remains the preferred target for routine parallel smoke
+
+Shared token bootstrap for parallel workers:
+
+```bash
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+$env:TARGET='browserstack'
+$env:B2B_AUTH_FETCH_COMMAND='powershell -File .\\scripts\\print_b2b_auth_url.ps1'
+pytest -m smoke -n 2
+```
+
+Fallback order for shared auth bootstrap:
+- internal login endpoint
+- `B2B_AUTH_FETCH_COMMAND`
+- one bootstrap login through the mobile app with token extraction from `WebView`
+- runtime cache
+
+How it works:
+- the auth URL is resolved once in the pytest controller process before workers start
+- the resolved URL is cached in `artifacts/runtime/b2b_auth.json`
+- the same normalized `B2B_AUTH_URL` is injected into each parallel worker
+- this is intentionally implemented as session bootstrap, not as a “first test”, because test ordering is fragile under `xdist`
+
+The project normalizes the auth URL automatically:
+- adds `lang=ru` if missing
+- adds `navigateTo=home` if missing
+
+For local runs, Appium is started automatically by the test session fixture.
+No separate manual Appium server start is required if:
+- `APPIUM_NODE_PATH` is valid
+- `APPIUM_MAIN_JS` is valid
+- `ANDROID_SDK_ROOT` / `ANDROID_HOME` are valid
+- the Android emulator/device is available
+
+Current practical note for local Android:
+- the launcher now fixes the original `Could not find a connected Android device in 20000ms` problem by preparing the local device/Appium stack automatically
+- however, long local runs may still hit emulator-level `adb` hangs on commands like `shell ps -A`
+- when that happens, the next stabilization step is a fresh emulator restart, because the blocker is below the pytest/Appium project layer
+
+```bash
+$env:TARGET='browserstack'
+$env:PLATFORM='android'
+pytest -m smoke
+```
+
+## CI Strategy
+
+- `smoke.yml`
+  - runs on push
+  - checks environment availability first
+  - runs only `smoke`
+  - uses `token` entry mode and `pytest -n 2`
+  - can be disabled temporarily with repository variable `ENABLE_PUSH_SMOKE=false`
+  - can still be forced manually through `workflow_dispatch`
+- `manual.yml`
+  - runs only via `workflow_dispatch`
+  - can run `manual`, `smoke`, or custom marker expressions
+  - is the intended path for regression/manual suites
+
+## Smoke Execution Model
+
+- `auth smoke`
+  - isolated session
+  - verifies login and `OnlineDuken` entry
+- `UI smoke`
+  - one shared long-lived session
+  - reuses one login for navigation/read-only checks
+  - attempts recovery back to `OnlineDuken` home between tests instead of relogging every time
+- `payments smoke`
+  - separate shared long-lived session
+  - reuses one login for QR and later payment scenarios
+  - can recover the payment session and, if needed, restart only that session without poisoning the UI smoke chain
+
+## Latest Smoke Status
+
+Latest local full smoke validation on `2026-04-19`:
+- `5 passed`
+- `2 failed`
+- `1 skipped`
+
+Passed:
+- `test_smoke_onlineduken_entry`
+- `test_smoke_orders_navigation`
+- `test_smoke_bonuses_navigation_and_history`
+- `test_smoke_qr_payment_flow[qr-common]`
+- `test_smoke_qr_payment_flow[qr-megapolis]`
+
+Failed:
+- `test_smoke_catalog_has_suppliers`
+- `test_smoke_cart_and_order_creation`
+
+Skipped:
+- `test_smoke_invoice_payment_from_home`
+  - missing `INVOICE_REFERENCE`
+
+Detailed report:
+- `SMOKE_RUN_REPORT_2026-04-19.md`
+
+Additional validation after the shared-session refactor:
+- `test_smoke_onlineduken_entry`
+- `test_smoke_orders_navigation`
+- `test_smoke_bonuses_navigation_and_history`
+- `test_smoke_qr_payment_flow[qr-common]`
+- `test_smoke_qr_payment_flow[qr-megapolis]`
+- latest result:
+  - `5 passed`
+
+## Current Assumptions
+
+- Android login credentials:
+  - phone `7772229999`
+  - SMS can be any numeric code
+  - PIN `0000`
+- OnlineDuken is reached through:
+  - app login
+  - deep link
+  - passcode unlock
+- An additional fast entry mode is supported:
+  - `ONLINEDUKEN_ENTRY_MODE=token`
+  - use `B2B_AUTH_URL` or `B2B_OB_AUTH_TOKEN`
+  - auth URLs are normalized to include `lang=ru` and `navigateTo=home`
+  - do not commit real tokens into git
+- WebView route base:
+  - `https://b2b.test.onlinebank.kz/web/customer-frontend/`
+
+## Notes
+
+- BrowserStack credentials must be supplied through GitHub Secrets in CI.
+- The environment precheck is intentionally externalized into a reusable Python module.
+- Payment flows are included in the smoke suite structure, but some of them require stable QR/invoice test data to be fully green.
+- `pytest-xdist` is included for BrowserStack-style parallel runs.
+- push smoke now has a repo-variable kill switch:
+  - set `ENABLE_PUSH_SMOKE=false` to stop automatic smoke on pushes temporarily
+- `Settings` now reads environment values at instantiation time, so runtime-injected values such as shared token auth URLs are visible to workers and fixtures.
+- a built-in internal-login bootstrap is available for environments where the auth token must be fetched from a private API before parallel runs
+- QR smoke now supports template-driven asset generation for `common` and `megapolis` QR cases
+- QR smoke is now implemented locally through native QR scanner + gallery upload + native payment tap
+- `PROJECT_PROGRESS.md` should be updated whenever project structure, strategy, smoke coverage, or important discoveries change.
+- Historical context from the APK research phase is intentionally stored in Markdown files in the repository and should not be deleted.
+- Internal auth bootstrap details are summarized in `INTERNAL_AUTH_SETUP.md`.

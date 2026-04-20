@@ -1,0 +1,519 @@
+# Project Progress
+
+## Purpose
+
+This is the live project status file.
+
+It should be updated as the project evolves so that:
+- context is not lost between sessions;
+- work can be resumed from another device or another chat;
+- changes in strategy are documented in one place;
+- current implementation status is clear without rereading the full history.
+
+Use this together with:
+- `HANDOFF_ONLINEDUKEN.md` for big-picture context
+- `HISTORY_CHRONOLOGY.md` for the full request timeline
+- `ARTIFACTS_INDEX.md` for saved evidence
+- `TEST_CASES_SMOKE_DRAFT.md` for smoke scope
+
+## Current Status
+
+As of `2026-04-16`:
+
+- APK analysis phase is complete enough to start automation.
+- Login flow and `OnlineDuken` entry were explored.
+- `OnlineDuken` was confirmed as a `WebView` inside native `B2BActivity`.
+- Main business routes inside the WebView were identified.
+- A local automation project scaffold has been created.
+- Local start strategy was refined: Appium should be started programmatically from the test session for `local` runs instead of relying on a separately launched background shell process.
+- Local smoke login flow was advanced further:
+  - SMS step is handled
+  - passcode keypad entry for `0000` is automated
+  - post-login `Далее` prompt is handled
+  - store selection popup should choose the first available store
+- The current blocker is now local Android infrastructure stability:
+  - `adb` intermittently hangs on simple shell calls against `emulator-5554`
+  - Appium then times out while reading device properties or enumerating webviews
+  - because of this, local smoke is currently blocked by emulator/adb health rather than by test-flow logic alone
+
+## What Is Already Implemented
+
+### Documentation
+
+- historical handoff and research documents are stored in project root
+- smoke draft exists
+- artifact index exists
+- this live progress file now exists
+
+### Automation foundation
+
+- Python project with `pytest`
+- Appium driver factory
+- local execution path
+- BrowserStack execution path
+- env-based configuration
+- test environment healthcheck helper
+- native page object placeholders
+- web page object placeholders
+- smoke test skeleton
+- manual test placeholder
+- GitHub Actions workflow separation:
+  - push-triggered smoke
+  - manual-triggered custom runs
+- local Appium startup config wired through environment variables
+
+## Current Test Strategy
+
+### CI
+
+- only `smoke` runs on push
+- smoke must first check environment availability
+- if the environment is down, smoke should not proceed blindly
+
+### Manual
+
+- non-smoke scenarios must run manually only
+- deep exploratory tests and unstable business flows should stay out of push CI until stabilized
+
+### Platform direction
+
+- Android is the first active platform
+- BrowserStack support is prepared for both Android and iOS
+- iOS still needs real application package/data and flow validation before being made active
+
+## Smoke Coverage Status
+
+### Implemented as structure
+
+- OnlineDuken entry
+- catalog visibility
+- orders navigation
+- bonuses navigation
+- QR payment skeleton
+- invoice payment skeleton
+- cart/order skeleton
+
+### Not fully production-ready yet
+
+- QR payment final implementation
+- invoice payment final implementation
+- cart and order creation final implementation
+- deep WebView interactions beyond basic route-level checks
+
+Reason:
+- stable test data is still needed
+- some deeper business screens need one more live locator pass
+
+## Known Technical Facts
+
+- Android package: `kz.halyk.onlinebank.stage`
+- entry to OnlineDuken can be reproduced through deep link:
+  - `https://halyk.onlinebank.kz/appLink/b2b/`
+- passcode used during current research:
+  - `0000`
+- SMS step currently accepts any numeric code in test environment
+- OnlineDuken base route:
+  - `https://b2b.test.onlinebank.kz/web/customer-frontend/`
+
+## Open Items
+
+### Test data still needed
+
+- stable QR image for gallery-based QR payment smoke
+- stable invoice reference/data for invoice payment smoke
+- stable supplier/product combination for cart/order smoke
+- if needed later, stable iOS app artifact for BrowserStack
+
+### Functional confirmations still needed
+
+- exact business path for contract selection ending with `376`
+- preferred supplier for smoke tests
+- final expected outcome for payment success assertions
+- exact UI path to bonus history in the live app
+- confirmation of stable local emulator/adb behavior before continuing full local smoke implementation
+
+## Recommended Next Steps
+
+1. Fill `.env` for local development.
+2. Restore healthy local Android automation state:
+   - ensure `adb` responds quickly to basic shell commands on `emulator-5554`
+   - restart the emulator and/or adb if needed
+3. Re-run the entry smoke after emulator stabilization.
+4. Validate the store-selection popup path in a healthy session.
+5. Add BrowserStack secrets in GitHub.
+6. Stabilize payment-related locators and assertions.
+7. Only then enable payment smoke paths fully in push CI.
+
+## Maintenance Rule
+
+Update this file after:
+- project structure changes
+- new workflows are added
+- smoke scope changes
+- major locators or routes are confirmed
+- BrowserStack strategy changes
+- a new blocking issue is found
+
+## Update On 2026-04-20 (Cart Smoke Deferred)
+
+- Cart-related smoke coverage is intentionally deferred for now.
+- Both cart flows are left in the test suite but are explicitly skipped with a stable reason:
+  - catalog -> supplier -> product -> cart -> create order
+  - home product -> cart -> create order
+- Reason:
+  - the current test environment does not yet have a stable supplier with predictable category, subcategory, and product data for reliable cart/order assertions
+  - exploratory probes showed that at least one supplier route reaches categories but then lands on an empty subcategory state, which is not good enough for deterministic smoke
+- Practical decision:
+  - keep catalog smoke as a page-availability/navigation check
+  - keep QR/payment and non-mutating UI smoke active
+  - re-enable cart smoke after the user prepares a stable supplier specifically for automation
+
+## Update On 2026-04-16 (Context Split)
+
+- `OnlineDuken` should now be treated as a mixed flow, not as pure `WebView`.
+- User-confirmed native screens inside `OnlineDuken`:
+  - QR flow
+  - gallery picker used for QR upload
+  - cashier page
+  - all nested screens inside cashier functionality
+- Everything else inside `OnlineDuken` should be treated as `WebView` unless a future capture proves otherwise.
+- Practical automation rule:
+  - default to `WEBVIEW_kz.halyk.onlinebank.stage` after entering `OnlineDuken`
+  - switch back to `NATIVE_APP` only for QR, gallery/system picker, and cashier flow
+- Native home entry was stabilized through the real `OnlineDuken` shortcut.
+- The contract currently used on native home is `name050201.705376`.
+- The first captured store in the `OnlineDuken` store-selection popup is:
+  - `QQQQQ`
+  - `0455b1fd-7001-4417-ac6c-f3897d98bce8`
+
+## Update On 2026-04-16 (Safe Smoke Attempt)
+
+- A safe local smoke subset was attempted for:
+  - `OnlineDuken` entry
+  - catalog visibility
+  - orders navigation
+  - bonuses navigation/history
+- Payments, QR, and cart/order creation were intentionally excluded from this run.
+- The current blocking issue for the safe subset is not WebView navigation itself.
+- The current blocking issue is that after login the app intermittently leaves the expected native home flow and lands in the Android launcher (`.NexusLauncherActivity`) instead of `MainActivity`.
+- Because of that, all four safe smoke tests currently fail before the `OnlineDuken` shortcut can be opened.
+- Recovery logic was added for:
+  - returning from `QrActivity`
+  - re-activating the app if focus moves outside `kz.halyk.onlinebank.stage`
+  - non-blocking fallback when contract suffix `376` is not found immediately
+- Latest relevant failure artifacts:
+  - `artifacts/main_home_not_detected.png`
+  - `artifacts/main_home_not_detected.xml`
+  - `artifacts/main_home_not_detected.txt`
+
+## Update On 2026-04-16 (Safe Smoke Stabilized)
+
+- The local safe smoke subset now passes end-to-end:
+  - `OnlineDuken` entry
+  - catalog visibility
+  - orders navigation
+  - bonuses navigation and history visibility
+- Latest passing local run result:
+  - `4 passed in 129.02s`
+- The safe smoke subset is intentionally still limited to non-payment flows:
+  - no `QR`
+  - no invoice payment
+  - no cart/order creation
+- A shared Appium session is now used for the safe smoke subset instead of creating a fresh mobile session for every one of these tests.
+- Reason for the shared session change:
+  - repeated local session teardown was causing `adb` and Appium instability
+  - single-session smoke is materially faster and more stable for the current APK/test bench
+- Entry stabilization changes that are now in place:
+  - `enter_onlineduken` no longer hard-fails before trying deeplink fallback when native home is flaky
+  - native shortcut open failures can now fall through to the next entry strategy
+  - the store-selection popup in `WebView` is detected and the first store is selected automatically
+- Confirmed current WebView DOM facts used by the smoke implementation:
+  - home route: `/web/customer-frontend/`
+  - catalog route: `/web/customer-frontend/distributor`
+  - bonuses route: `/web/customer-frontend/bonuses`
+  - bonus history entry is a `div.card.card-item[routerlink="./history"]`
+- Current practical note for catalog:
+  - the primary path still clicks the `Каталог` tab
+  - if the DOM does not settle fast enough after the click, the smoke test falls back to direct route open for `/web/customer-frontend/distributor`
+- New useful probe artifacts generated during stabilization:
+  - `artifacts/webview_after_onlineduken_entry.html`
+  - `artifacts/webview_after_onlineduken_entry.png`
+  - `artifacts/bonuses_page_probe.html`
+  - `artifacts/bonuses_page_probe.png`
+  - `artifacts/catalog_page_probe.html`
+  - `artifacts/catalog_page_probe.png`
+
+## Update On 2026-04-16 (Token Entry Mode Added)
+
+- A new `OnlineDuken` entry mode was added:
+  - `ONLINEDUKEN_ENTRY_MODE=token`
+- New config inputs:
+  - `B2B_AUTH_URL`
+  - `B2B_OB_AUTH_TOKEN`
+- Important technical finding:
+  - the URL `https://b2b.test.onlinebank.kz/web/customer-frontend/auth?...` is not resolved by Android as a direct app link for package `kz.halyk.onlinebank.stage`
+  - because of that, token mode does not open the app directly from this URL at the Android intent level
+- Current token-mode strategy:
+  - try direct auth URL deep link first
+  - if Android cannot resolve it, fall back to opening the `OnlineDuken` container
+  - once `WEBVIEW` is available, load the token auth URL inside the `WebView`
+- Verified result:
+  - token-based `OnlineDuken` entry smoke passed locally
+  - latest entry-only result:
+    - `1 passed in 110.04s`
+- Practical implication:
+  - the token is useful for bypassing `WebView` auth inside `OnlineDuken`
+  - but it does not fully replace Android-level app entry on a cold start
+
+## Update On 2026-04-16 (Token Mode Stabilized)
+
+- Token mode was stabilized further by normalizing the auth URL automatically:
+  - `lang=ru`
+  - `navigateTo=home`
+- This matters because a bare URL like:
+  - `/web/customer-frontend/auth?ob-auth-token=...`
+  was loading only the auth shell and navbar, not a fully usable `OnlineDuken` home state.
+- After URL normalization, the local safe smoke subset also passes in token mode.
+- Latest passing token-mode result:
+  - `4 passed in 103.88s`
+- Practical current outcome:
+  - classic full-entry safe smoke is green
+  - token-entry safe smoke is also green
+  - token mode is now the better candidate for faster local runs and future parallelization work
+
+## Update On 2026-04-16 (Parallel-Ready Baseline)
+
+- `pytest-xdist` was added to the project dependencies.
+- The project is now explicitly prepared for parallel smoke execution on BrowserStack.
+- A protective guard was added for local runs:
+  - if `pytest -n ...` is requested while `TARGET=local`, the session exits early with a clear message
+  - reason: the current local setup uses a single emulator/Appium device session, so parallel workers on one emulator would create unstable contention rather than real parallel coverage
+- Practical current rule:
+  - local Android runs stay sequential
+  - BrowserStack is the intended path for true parallel smoke execution
+- The protection was verified with a real command:
+  - `pytest -m smoke -n 2 -q`
+  - current result on local setup: early exit with a clear message instead of unstable Appium/device contention
+- Python tooling alignment note:
+  - `pytest.exe` on this machine uses Python `3.12`
+  - editable install and `pytest-xdist` were also installed into that same interpreter so plugin loading is now consistent
+
+## Update On 2026-04-16 (Shared Token Bootstrap)
+
+- Parallel token-mode execution design was refined:
+  - instead of making one test run first and feed the others, the project now resolves the auth URL once in the pytest controller process before worker startup
+  - this avoids fragile test ordering and cross-worker dependencies under `xdist`
+- New runtime auth options:
+  - `B2B_AUTH_FETCH_COMMAND`
+  - `B2B_SHARED_AUTH_BOOTSTRAP`
+  - `B2B_AUTH_CACHE_TTL_SEC`
+  - `B2B_AUTH_CACHE_PATH`
+- Behavior:
+  - if token mode is enabled, pytest can resolve one shared auth URL from env, cache, or a fetch command
+  - the resolved URL is normalized and stored in `artifacts/runtime/b2b_auth.json`
+  - the same auth URL is injected into every pytest worker
+- Internal config improvement:
+  - `Settings` now reads env values at instantiation time rather than freezing them at import time
+  - this is important for worker-specific runtime values such as shared auth bootstrap data
+
+## Update On 2026-04-16 (Internal Login Endpoint Bootstrap)
+
+- The shared token bootstrap can now fetch auth data directly from an internal API endpoint.
+- New env options:
+  - `B2B_INTERNAL_LOGIN_URL`
+  - `B2B_INTERNAL_CLIENT_ID`
+  - `B2B_INTERNAL_CLIENT_SECRET`
+  - `B2B_INTERNAL_GRANT_TYPE`
+- Expected request shape:
+  - `POST` with form fields `client_id`, `client_secret`, `grant_type`
+- Response handling:
+  - if the endpoint returns a ready auth URL, the framework uses it directly
+  - if the endpoint returns `ob_auth_token`, `token`, or `access_token`, the framework converts it into the standard `ob-auth-token` auth URL
+- Practical use:
+  - this is now the preferred parallel bootstrap path when a private internal auth API is available
+
+## Update On 2026-04-16 (App Login Fallback For Shared Token)
+
+- If the private internal login endpoint is unavailable, shared token bootstrap now has another fallback:
+  - start one bootstrap mobile session
+  - authenticate through the real app flow
+  - enter `OnlineDuken`
+  - try to extract a reusable auth URL or token from the active `WebView`
+- New env option:
+  - `B2B_APP_AUTH_BOOTSTRAP`
+- Current bootstrap priority is now:
+  - internal login endpoint
+  - `B2B_AUTH_FETCH_COMMAND`
+  - app login bootstrap
+  - cached runtime auth URL
+
+## Update On 2026-04-16 (Context Locked In)
+
+- Added a dedicated internal-auth context file:
+  - `INTERNAL_AUTH_SETUP.md`
+- Added a ready local template for parallel/token/bootstrap configuration:
+  - `.env.internal.example`
+- Added extra ignore rules for local secret-bearing env files:
+  - `.env.local`
+  - `.env.parallel.local`
+- Practical outcome:
+  - the project now contains both implementation and written operating context for internal token bootstrap and fallback behavior
+
+## Update On 2026-04-18 (QR Templates Added)
+
+- QR smoke scope was expanded from one generic placeholder into two explicit business QR types:
+  - `common`
+  - `megapolis`
+- The project can now generate QR PNG assets directly from template URLs and business parameters.
+- New QR-related config inputs:
+  - `CLIENT_BIN`
+  - `QR_SOURCE_URL`
+  - `QR_SOURCE_PAYLOAD`
+  - `QR_GENERATED_IMAGE_PATH`
+  - `QR_AMOUNT`
+  - `QR_INVOICE_ID`
+  - `QR_INVOICE_TITLE`
+  - `QR_MEGAPOLIS_CONTRACT`
+  - `QR_COMMON_TEMPLATE`
+  - `QR_MEGAPOLIS_TEMPLATE`
+- Current implementation status:
+  - QR asset generation is ready
+  - smoke suite is structured for both QR types
+  - live native QR scanner/gallery locators still need one emulator pass before the test can go green end-to-end
+
+## Update On 2026-04-18 (QR Flow Implemented Locally)
+
+- The QR smoke flow is now implemented as a real local Appium flow, not a placeholder skip.
+- Current automated path:
+  - enter `OnlineDuken`
+  - switch to native `QR` tab
+  - open the native gallery button
+  - select the first image from Android Photo Picker
+  - wait for the native payment screen
+  - tap `Оплатить`
+- New native page objects and flow helpers were added for:
+  - native `QR` scanner
+  - Android Photo Picker
+  - native payment screen
+- Live backend result with a dummy `CLIENT_BIN`:
+  - toast: `Неправильный ИИН/БИН клиента в QR`
+- Practical implication:
+  - the automation path itself is now proven
+  - the remaining blocker for a green QR smoke is a real client BIN for the test user
+- Key artifacts:
+  - `artifacts/qr_probe_after_photo_select_native.png`
+  - `artifacts/qr_probe_after_pay_click_generic_3s.png`
+  - `artifacts/qr_payment_invalid_bin_toast.png`
+
+## Update On 2026-04-18 (Local Parallel Attempt)
+
+- Local true parallel execution was moved from design-only into real machine setup:
+  - second local AVD clone created: `Medium_Phone_Parallel`
+  - second emulator brought up on `emulator-5556`
+  - second Appium server brought up on `http://127.0.0.1:4725`
+- The framework now supports real worker-to-device mapping through:
+  - `LOCAL_ANDROID_DEVICE_MATRIX`
+- Smoke fixtures were updated so parallel workers use isolated mobile sessions rather than accidentally constructing shared session fixtures.
+- Additional WebView recovery logic was added:
+  - route fallback for `catalog`, `orders`, `bonuses`
+  - `WEBVIEW` reconnection attempt when chromedriver loses DevTools connection
+- Current honest state:
+  - local two-device infrastructure is up
+  - short validation showed the setup is close, but long local parallel runs are still unstable/slow on this host
+  - BrowserStack remains the recommended path for routine parallel smoke in CI
+
+## Update On 2026-04-18 (CI Toggle Refined)
+
+- `smoke.yml` now supports a temporary push-smoke disable switch:
+  - repository variable `ENABLE_PUSH_SMOKE=false`
+- `workflow_dispatch` can still force a smoke run even while push smoke is disabled.
+- Push smoke is now prepared for BrowserStack parallel execution with:
+  - `ONLINEDUKEN_ENTRY_MODE=token`
+  - `pytest -n 2`
+- `manual.yml` remains the intended path for manual/regression execution.
+
+## Update On 2026-04-18 (Automatic Local Bootstrap Added)
+
+- Added a one-command local launcher:
+  - `scripts/run_local_smoke.ps1`
+- The launcher now prepares the local Android/Appium stack automatically:
+  - ensures Python dependencies are installed
+  - ensures global Appium is installed
+  - ensures the Appium `uiautomator2` driver is installed
+  - starts `adb`
+  - starts the Android emulator if needed
+  - starts fresh Appium server processes on the required ports
+  - exports the local env vars required for the project
+- Verified result:
+  - bootstrap mode now completes successfully
+  - local checks after bootstrap confirmed:
+    - `adb devices` shows `emulator-5554`
+    - `http://127.0.0.1:4723/status` returns ready
+- A focused token-mode validation also passed:
+  - `test_smoke_onlineduken_entry`
+  - `test_smoke_catalog_has_suppliers`
+- The original local startup error:
+  - `Could not find a connected Android device in 20000ms`
+  is now addressed by the launcher/bootstrap layer rather than left to raw pytest/Appium startup.
+- Current remaining blocker for long local smoke runs:
+  - the emulator intermittently hangs on `adb` commands such as `shell ps -A`, `force-stop`, and hidden-api cleanup
+  - when that happens, Appium can lose the `WEBVIEW` context and later die during session cleanup
+  - this is currently an emulator/adb stability problem, not a missing dependency/bootstrap problem
+- Local safe-smoke strategy was re-stabilized:
+  - local sequential smoke again prefers a shared Appium session
+  - isolated sessions remain for BrowserStack and `xdist` workers
+
+## Update On 2026-04-19 (QR Smoke Green, Full Smoke Rechecked)
+
+- User provided a real client BIN for QR testing:
+  - `900423400509`
+- QR smoke was updated and revalidated against the live native payment flow.
+- Important native finding:
+  - after QR upload, the payment screen for this path is `Подписание платежа`
+  - the primary action is effectively a signing step, not only a plain `Оплатить`
+- Result:
+  - `test_smoke_qr_payment_flow[qr-common]` -> passed
+  - `test_smoke_qr_payment_flow[qr-megapolis]` -> passed
+- The full local smoke suite was then rerun in token mode with the same BIN.
+- To avoid one broken Appium/WebView session poisoning the whole suite, smoke fixtures were switched back to isolated per-test sessions for this run.
+- Latest full smoke result:
+  - `5 passed`
+  - `2 failed`
+  - `1 skipped`
+- Passed:
+  - `test_smoke_onlineduken_entry`
+  - `test_smoke_orders_navigation`
+  - `test_smoke_bonuses_navigation_and_history`
+  - `test_smoke_qr_payment_flow[qr-common]`
+  - `test_smoke_qr_payment_flow[qr-megapolis]`
+- Failed:
+  - `test_smoke_catalog_has_suppliers`
+  - `test_smoke_cart_and_order_creation`
+- Skipped:
+  - `test_smoke_invoice_payment_from_home`
+  - skip reason: missing `INVOICE_REFERENCE`
+- Current red area is now concentrated in catalog-dependent WebView checks rather than in QR or auth flows.
+- A dedicated run report was added:
+  - `SMOKE_RUN_REPORT_2026-04-19.md`
+
+## Update On 2026-04-19 (Shared Session Smoke Refactor)
+
+- Smoke execution strategy was refactored to reduce repeated full logins.
+- The suite is now split conceptually into:
+  - isolated `auth smoke`
+  - shared-session `UI smoke`
+  - separate shared-session `payments smoke`
+- New behavior:
+  - UI checks reuse one long-lived Appium session and try to recover back to `OnlineDuken` home between tests
+  - payment checks reuse a different long-lived Appium session so state-changing flows do not contaminate UI navigation checks
+  - if a shared session becomes unhealthy, the managed session layer can restart only that session instead of poisoning the rest of the chain
+- QR generation was tightened:
+  - QR payloads now use unique numeric values per run
+  - this prevents the main happy-path QR smoke from accidentally reusing an older QR and falling into the business flow for re-signing a pending payment
+- Live verification after the refactor:
+  - `test_smoke_onlineduken_entry`
+  - `test_smoke_orders_navigation`
+  - `test_smoke_bonuses_navigation_and_history`
+  - `test_smoke_qr_payment_flow[qr-common]`
+  - `test_smoke_qr_payment_flow[qr-megapolis]`
+  - result: `5 passed`

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onlineduken-mobile-automation"
+version = "0.1.0"
+description = "Hybrid mobile automation for Halyk stage app and OnlineDuken WebView"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "Appium-Python-Client>=4.1.0",
+  "pytest>=8.2.0",
+  "pytest-xdist>=3.6.1",
+  "qrcode[pil]>=7.4.2",
+  "python-dotenv>=1.0.1",
+  "requests>=2.32.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["mobile_automation*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"

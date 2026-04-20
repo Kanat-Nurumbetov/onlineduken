@@ -1,0 +1,77 @@
+name: mobile-manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to run
+        required: true
+        default: android
+        type: choice
+        options:
+          - android
+          - ios
+      marker:
+        description: Pytest marker expression
+        required: true
+        default: manual
+        type: string
+
+jobs:
+  manual-run:
+    runs-on: ubuntu-latest
+    env:
+      TARGET: browserstack
+      PLATFORM: ${{ inputs.platform }}
+      ONLINEDUKEN_ENTRY_MODE: token
+      B2B_SHARED_AUTH_BOOTSTRAP: true
+      B2B_APP_AUTH_BOOTSTRAP: true
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BROWSERSTACK_APP_ANDROID: ${{ secrets.BROWSERSTACK_APP_ANDROID }}
+      BROWSERSTACK_APP_IOS: ${{ secrets.BROWSERSTACK_APP_IOS }}
+      BROWSERSTACK_PROJECT_NAME: OnlineDuken E2E
+      BROWSERSTACK_BUILD_NAME: manual-${{ github.ref_name }}-${{ github.run_number }}
+      PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
+      SMS_CODE: ${{ secrets.SMS_CODE }}
+      PIN_CODE: ${{ secrets.PIN_CODE }}
+      CLIENT_BIN: ${{ secrets.CLIENT_BIN }}
+      QR_AMOUNT: ${{ secrets.QR_AMOUNT }}
+      QR_INVOICE_ID: ${{ secrets.QR_INVOICE_ID }}
+      QR_INVOICE_TITLE: ${{ secrets.QR_INVOICE_TITLE }}
+      QR_MEGAPOLIS_CONTRACT: ${{ secrets.QR_MEGAPOLIS_CONTRACT }}
+      B2B_AUTH_URL: ${{ secrets.B2B_AUTH_URL }}
+      B2B_OB_AUTH_TOKEN: ${{ secrets.B2B_OB_AUTH_TOKEN }}
+      B2B_INTERNAL_LOGIN_URL: ${{ secrets.B2B_INTERNAL_LOGIN_URL }}
+      B2B_INTERNAL_CLIENT_ID: ${{ secrets.B2B_INTERNAL_CLIENT_ID }}
+      B2B_INTERNAL_CLIENT_SECRET: ${{ secrets.B2B_INTERNAL_CLIENT_SECRET }}
+      B2B_INTERNAL_GRANT_TYPE: ${{ secrets.B2B_INTERNAL_GRANT_TYPE }}
+      TEST_ENV_HEALTHCHECK_URLS: ${{ secrets.TEST_ENV_HEALTHCHECK_URLS }}
+      QR_IMAGE_PATH: ${{ secrets.QR_IMAGE_PATH }}
+      INVOICE_REFERENCE: ${{ secrets.INVOICE_REFERENCE }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Check test environment availability
+        id: envcheck
+        run: python -m mobile_automation.healthcheck --github-output || true
+
+      - name: Stop when environment is unavailable
+        if: steps.envcheck.outputs.available != 'true'
+        run: |
+          echo "Test environment is unavailable."
+          exit 1
+
+      - name: Run selected tests
+        run: pytest -m "${{ inputs.marker }}"
