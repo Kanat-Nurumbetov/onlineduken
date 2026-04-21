@@ -5,6 +5,7 @@ import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+import allure
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
@@ -229,10 +230,17 @@ def submit_qr_payment(driver, timeout: int = 15) -> str:
 
 
 def run_qr_gallery_payment_flow(driver, settings: Settings, qr_case: GeneratedQrCase) -> str:
-    push_qr_image_to_local_device(settings, qr_case.image_path)
-    active_driver = prepare_qr_entry(driver, settings, qr_case) or driver
-    open_qr_scanner(active_driver)
-    open_photo_picker(active_driver)
-    select_first_photo(active_driver)
-    wait_for_qr_payment_screen(active_driver)
-    return submit_qr_payment(active_driver)
+    with allure.step(f"Push generated QR image to device for case '{qr_case.name}'"):
+        push_qr_image_to_local_device(settings, qr_case.image_path)
+    with allure.step("Prepare OnlineDuken native home for QR flow"):
+        active_driver = prepare_qr_entry(driver, settings, qr_case) or driver
+    with allure.step("Open QR scanner"):
+        open_qr_scanner(active_driver)
+    with allure.step("Open native photo picker"):
+        open_photo_picker(active_driver)
+    with allure.step("Select the first QR image from gallery"):
+        select_first_photo(active_driver)
+    with allure.step("Wait for QR payment screen"):
+        wait_for_qr_payment_screen(active_driver)
+    with allure.step("Submit QR payment"):
+        return submit_qr_payment(active_driver)

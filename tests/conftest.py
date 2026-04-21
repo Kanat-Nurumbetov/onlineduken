@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 from contextlib import suppress
@@ -19,7 +20,10 @@ from mobile_automation.config import Settings
 from mobile_automation.driver_factory import build_driver
 from mobile_automation.flows import enter_onlineduken, recover_onlineduken_home
 from mobile_automation.qr_assets import build_generated_qr_cases, ensure_qr_image
+from mobile_automation.reporting import attach_driver_state, attach_text, allure_enabled, write_allure_environment
 from mobile_automation.runtime_auth import resolve_shared_b2b_auth_url
+from mobile_automation.web_driver_factory import build_web_driver
+from mobile_automation.web_flows import open_authenticated_onlineduken
 
 
 SHARED_B2B_AUTH_URL = "shared_b2b_auth_url"
@@ -115,6 +119,16 @@ def _apply_local_worker_device(worker_udid: str, worker_appium_url: str) -> None
         os.environ["APPIUM_SERVER_URL"] = worker_appium_url
 
 
+def _get_allure_results_dir(config: pytest.Config) -> str:
+    with suppress(Exception):
+        return config.getoption("--alluredir") or ""
+    return ""
+
+
+def _safe_allure_name(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_") or "artifact"
+
+
 def pytest_configure(config: pytest.Config) -> None:
     worker_input = getattr(config, "workerinput", None)
     if worker_input:
@@ -160,6 +174,10 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if hasattr(session.config, "workerinput"):
         return
 
+    allure_results_dir = _get_allure_results_dir(session.config)
+    if allure_results_dir:
+        write_allure_environment(allure_results_dir, Settings())
+
     requested_workers = _requested_parallel_workers(session.config)
     if requested_workers <= 1:
         return
@@ -178,6 +196,65 @@ def pytest_sessionstart(session: pytest.Session) -> None:
         "'<udid>|<appium_server_url>' entry per worker, or switch to TARGET=browserstack.",
         returncode=2,
     )
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    settings = Settings()
+    if not settings.is_browserstack or settings.browserstack_webview_enabled:
+        return
+
+    skip_reason = (
+        "BrowserStack smoke is temporarily split into native-shell checks only. "
+        "WebView and payment flows stay disabled until a build with explicit "
+        "OnlineDuken WebView debugging is available."
+    )
+    browserstack_skip = pytest.mark.skip(reason=skip_reason)
+
+    for item in items:
+        if "browserstack_safe" in item.keywords:
+            continue
+        if "webview" in item.keywords or "payments" in item.keywords:
+            item.add_marker(browserstack_skip)
+
+
+def _extract_driver_candidate(value):
+    if value is None:
+        return None
+    if hasattr(value, "session_id") and hasattr(value, "page_source"):
+        return value
+    active_driver = getattr(value, "active_driver", None)
+    if active_driver is not None and hasattr(active_driver, "session_id") and hasattr(active_driver, "page_source"):
+        return active_driver
+    return None
+
+
+def _iter_unique_drivers(item: pytest.Item):
+    seen: set[str] = set()
+    for value in getattr(item, "funcargs", {}).values():
+        driver = _extract_driver_candidate(value)
+        if driver is None:
+            continue
+        driver_key = getattr(driver, "session_id", "") or str(id(driver))
+        if driver_key in seen:
+            continue
+        seen.add(driver_key)
+        yield driver
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
+    outcome = yield
+    report = outcome.get_result()
+    setattr(item, f"rep_{report.when}", report)
+
+    if not allure_enabled():
+        return
+    if report.when not in {"setup", "call"} or not report.failed or getattr(report, "wasxfail", False):
+        return
+
+    attach_text(f"{report.when}_failure", report.longreprtext)
+    for index, driver in enumerate(_iter_unique_drivers(item), start=1):
+        attach_driver_state(driver, label_prefix=f"{report.when}_{_safe_allure_name(item.name)}_{index}")
 
 
 @pytest.fixture(scope="session")
@@ -281,6 +358,34 @@ def _prepare_managed_onlineduken_home(manager: ManagedDriverSession, settings: S
 def auth_smoke_driver(driver, settings: Settings):
     enter_onlineduken(driver, settings)
     return driver
+
+
+@pytest.fixture(scope="function")
+def onlineduken_native_shell_driver(driver, settings: Settings):
+    enter_onlineduken(driver, settings, switch_to_webview_context=False)
+    return driver
+
+
+@pytest.fixture(scope="session")
+def web_auth_url(settings: Settings) -> str:
+    auth_url = resolve_shared_b2b_auth_url(settings)
+    if not auth_url:
+        pytest.skip(
+            "OnlineDuken web suite requires a resolved auth URL or token. "
+            "Set B2B_AUTH_URL/B2B_OB_AUTH_TOKEN or configure internal auth bootstrap."
+        )
+    return auth_url
+
+
+@pytest.fixture(scope="function")
+def web_driver(settings: Settings, web_auth_url: str):
+    driver = build_web_driver(settings)
+    try:
+        open_authenticated_onlineduken(driver, web_auth_url)
+        yield driver
+    finally:
+        with suppress(Exception):
+            driver.quit()
 
 
 @pytest.fixture(scope="module")

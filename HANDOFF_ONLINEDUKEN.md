@@ -217,6 +217,52 @@ Why:
 - `OnlineDuken` content is web-based in `WebView`;
 - we already confirmed WebView remote debugging was available and DOM could be inspected.
 
+### Temporary BrowserStack split
+
+Until a stage build with explicit `WebView.setWebContentsDebuggingEnabled(true)` for `OnlineDuken` is provided, BrowserStack should be treated as a native-shell smoke layer, not as the full hybrid baseline.
+
+Current BrowserStack-safe scope:
+- app shell reachability
+- native entry into the `OnlineDuken` container
+
+Verified status:
+- this split was validated on BrowserStack with parallel execution
+- command shape:
+  - `pytest -m "smoke and browserstack_safe" -n 2`
+- result at validation time:
+  - `2 passed`
+- rollback / re-enable instructions for returning to full BrowserStack hybrid smoke are documented in:
+  - [README.md](C:\Users\Kanat\Documents\New%20project\README.md)
+
+Deferred from BrowserStack for now:
+- all `webview`-marked smoke
+- payment flows that depend on WebView entry or gallery upload through the hybrid shell
+
+Important:
+- this is a temporary execution split only
+- the project foundation remains hybrid mobile automation, with local runs still covering the main `OnlineDuken` WebView flows
+
+## Separate Browser Web Suite
+
+To keep `OnlineDuken` coverage moving while BrowserStack hybrid automation is limited, a separate browser-based suite was added.
+
+Main files:
+- [web_driver_factory.py](C:\Users\Kanat\Documents\New%20project\mobile_automation\web_driver_factory.py)
+- [web_flows.py](C:\Users\Kanat\Documents\New%20project\mobile_automation\web_flows.py)
+- [test_onlineduken_web_suite.py](C:\Users\Kanat\Documents\New%20project\tests\web\test_onlineduken_web_suite.py)
+
+Current browser-suite scope:
+- home page load
+- catalog page state
+- orders page
+- bonuses page and history link
+- more page
+
+Auth requirement:
+- the suite expects a valid `B2B_AUTH_URL` or `B2B_OB_AUTH_TOKEN`
+- it can also reuse the existing shared auth bootstrap path when internal auth is configured
+- if no valid auth is available, the suite skips instead of producing false failures
+
 ### Initial POM split
 
 Suggested first page objects:
@@ -272,6 +318,48 @@ Best next step:
 - Current expectation for future re-enable:
   - user provides a stable supplier with predictable category/product availability
   - then cart smoke can be completed and unskipped without redesigning the suite
+
+## Update On 2026-04-20 (Allure Reporting Added)
+
+- `Allure` reporting is now integrated into the project.
+- Current scope:
+  - `allure-pytest` added as a dependency
+  - smoke tests have readable labels and titles
+  - QR flow is split into explicit `Allure` steps
+  - failed tests auto-attach:
+    - screenshot
+    - page source
+    - driver metadata
+    - pytest failure text
+  - `environment.properties` is generated automatically when using `--alluredir`
+- Local launcher support:
+  - `scripts/run_local_smoke.ps1 -Allure`
+- Practical implication:
+  - local debugging can still rely on raw `artifacts/`
+  - `Allure` becomes the main readable report layer for local runs and future CI publishing
+
+## Update On 2026-04-20 (BrowserStack Verification)
+
+- BrowserStack credentials were validated through real App Automate sessions.
+- Verified app reference:
+  - `bs://2824992f98ef03a4740dc5931569b2838d5a5ce6`
+- Verified BrowserStack project name:
+  - `B2B Mobile Demo`
+- Verified remote device:
+  - `Samsung Galaxy S24`
+  - Android `14.0`
+- Single-session connectivity check succeeded at the session-creation level.
+- Parallel `pytest -n 2` execution also succeeded at the session-creation/orchestration level.
+- Current BrowserStack blocker is specifically `WebView` automation:
+  - BrowserStack Appium fails while switching to the `WEBVIEW` context
+  - observed errors:
+    - `Failed to get sockets matching: @webview_devtools_remote_*`
+    - `make sure the app has its WebView configured for debugging`
+- Important interpretation:
+  - BrowserStack account access is working
+  - uploaded app reference is working
+  - remote Appium session creation is working
+  - hybrid `OnlineDuken` automation is blocked by BrowserStack WebView inspection/debugging, not by cloud connectivity itself
 - review and approve smoke cases;
 - then scaffold automation project and page objects;
 - then implement the highest-priority flows first:
@@ -607,7 +695,7 @@ The CI strategy is now more concrete:
 Use this in a new chat if needed:
 
 ```text
-Continue the OnlineDuken E2E analysis from the handoff files in the repo/workspace.
+Continue the B2B Mobile Demo automation work from the handoff files in the repo/workspace.
 Read:
 - HANDOFF_ONLINEDUKEN.md
 - HISTORY_CHRONOLOGY.md

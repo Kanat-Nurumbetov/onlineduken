@@ -737,7 +737,7 @@ def apply_b2b_auth_url_in_webview(driver, settings: Settings) -> bool:
     return True
 
 
-def enter_onlineduken(driver, settings: Settings) -> None:
+def enter_onlineduken(driver, settings: Settings, switch_to_webview_context: bool = True) -> None:
     if settings.onlineduken_entry_mode == "token":
         ready_state = "timeout"
         entry_strategies = [lambda current_driver: open_b2b_auth_url(current_driver, settings)]
@@ -766,6 +766,8 @@ def enter_onlineduken(driver, settings: Settings) -> None:
 
         if not driver.find_elements(*B2BWebViewPage.WEBVIEW):
             capture_native_debug_state(driver, f"missing_b2b_webview_container_{ready_state}")
+        if not switch_to_webview_context:
+            return
         switch_to_webview(driver, timeout=settings.explicit_wait_sec)
         if settings.resolved_b2b_auth_url:
             apply_b2b_auth_url_in_webview(driver, settings)
@@ -797,5 +799,7 @@ def enter_onlineduken(driver, settings: Settings) -> None:
 
     if not driver.find_elements(*B2BWebViewPage.WEBVIEW):
         capture_native_debug_state(driver, f"missing_b2b_webview_container_{ready_state}")
+    if not switch_to_webview_context:
+        return
     switch_to_webview(driver, timeout=settings.explicit_wait_sec)
     choose_first_store_in_webview_if_present(driver)

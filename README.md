@@ -22,6 +22,7 @@ Hybrid mobile automation project for:
 - Python
 - `pytest`
 - `Appium`
+- `Allure`
 - BrowserStack App Automate
 
 ## Project Layout
@@ -115,7 +116,7 @@ Parallel smoke on BrowserStack:
 
 ```bash
 $env:TARGET='browserstack'
-pytest -m smoke -n 2
+pytest -m "smoke and browserstack_safe" -n 2
 ```
 
 Important:
@@ -123,12 +124,138 @@ Important:
 - the current local setup uses one emulator/Appium device session, so `-n > 1` on the same emulator would be unstable rather than truly parallel
 - the current safe-smoke design is parallel-ready for BrowserStack workers, where each worker gets its own isolated mobile session
 - if `ONLINEDUKEN_ENTRY_MODE=token`, workers can share one bootstrap-resolved auth URL through the internal login endpoint, `B2B_AUTH_FETCH_COMMAND`, `B2B_AUTH_URL`, or the runtime cache file
+- until a BrowserStack-ready build with explicit `OnlineDuken` WebView debugging is available, BrowserStack push smoke is intentionally split into native-shell checks only
+- the core project direction remains hybrid:
+  - BrowserStack-safe smoke now validates native shell reachability
+  - full `OnlineDuken` WebView coverage continues to run locally and will later be re-enabled in BrowserStack
 
 Manual:
 
 ```bash
 pytest -m manual
 ```
+
+## OnlineDuken Web Suite
+
+A separate browser-based suite now exists for `OnlineDuken` so web coverage can continue independently from the mobile container.
+
+Test file:
+- [test_onlineduken_web_suite.py](C:\Users\Kanat\Documents\New%20project\tests\web\test_onlineduken_web_suite.py)
+
+Current scope:
+- authenticated home page load
+- catalog page state
+- orders page
+- bonuses page and history link
+- more page and cashier menu item
+
+Marker:
+
+```bash
+pytest -m web
+```
+
+Run the full web suite locally:
+
+```powershell
+$env:WEB_HEADLESS='true'
+py -3.12 -m pytest tests\web\test_onlineduken_web_suite.py -q -ra
+```
+
+Run a single browser test:
+
+```powershell
+$env:WEB_HEADLESS='true'
+py -3.12 -m pytest tests\web\test_onlineduken_web_suite.py -k "home_page_loads" -q -ra -s
+```
+
+Authentication requirement:
+- the web suite needs a valid `B2B_AUTH_URL` or `B2B_OB_AUTH_TOKEN`
+- it can also use the existing shared auth bootstrap if internal auth is configured
+- if no valid auth is available, the suite skips cleanly instead of failing with false negatives
+
+## Allure Reporting
+
+The project now supports `Allure` reporting on top of `pytest`.
+
+How it works:
+- run tests with `--alluredir=allure-results`
+- `pytest` writes raw Allure result files into `allure-results/`
+- then `Allure CLI` renders those files into a readable HTML report
+
+Automatic attachments for failed tests:
+- mobile screenshot
+- page source
+- driver metadata:
+  - session id
+  - current context
+  - available contexts
+  - current package / activity when available
+  - current URL when available
+- pytest failure text
+
+When `--alluredir` is used, the project also writes `environment.properties` so the report shows:
+- `TARGET`
+- `PLATFORM`
+- `ONLINEDUKEN_ENTRY_MODE`
+- BrowserStack/local context
+
+### Install Allure Locally
+
+The Python plugin is installed with the project:
+
+```bash
+pip install -e .
+```
+
+You still need the `Allure CLI` locally to open HTML reports.
+
+Typical Windows options:
+- `choco install allure-commandline`
+- `scoop install allure`
+
+### Run Tests With Allure
+
+Plain smoke run with Allure:
+
+```powershell
+$env:TARGET='local'
+$env:PLATFORM='android'
+$env:ONLINEDUKEN_ENTRY_MODE='token'
+py -3.12 -m pytest -m smoke --alluredir=allure-results
+```
+
+Safe smoke through the local launcher:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_local_smoke.ps1 -Workers 1 -SafeSmoke -Allure
+```
+
+### Open the Report
+
+Temporary local server:
+
+```bash
+allure serve allure-results
+```
+
+Static HTML output:
+
+```bash
+allure generate allure-results --clean -o allure-report
+allure open allure-report
+```
+
+### CI Direction
+
+Recommended CI usage:
+- run pytest with `--alluredir=allure-results`
+- upload `allure-results` as a workflow artifact
+- optionally generate `allure-report` in a separate CI step
+
+This fits the current strategy:
+- push -> smoke
+- manual workflow -> regression / custom runs
 
 Single platform examples:
 
@@ -173,6 +300,94 @@ This path posts `client_id`, `client_secret`, and `grant_type=internal`, then tr
 
 If only a token is returned, the framework converts it into:
 - `https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=...`
+
+## BrowserStack Split
+
+Current BrowserStack strategy is intentionally split because `App Automate` cannot yet switch into the `OnlineDuken` `WEBVIEW` for the current uploaded stage builds.
+
+What runs in BrowserStack right now:
+- `browserstack_safe` native smoke
+- app shell reachability
+- native entry into the `OnlineDuken` container
+
+What stays out of BrowserStack smoke for now:
+- all tests marked `webview`
+- payment flows marked `payments`
+
+Control flag:
+
+```bash
+BROWSERSTACK_WEBVIEW_ENABLED=false
+```
+
+When a new build arrives with explicit `WebView.setWebContentsDebuggingEnabled(true)` for `OnlineDuken`, this flag can be turned on and BrowserStack smoke can be expanded back toward the hybrid baseline.
+
+## How To Re-enable Full BrowserStack Hybrid Smoke
+
+When a new Android build is delivered with explicit `OnlineDuken` WebView debugging enabled, use this checklist to return BrowserStack from the temporary native-shell split back to the full hybrid baseline.
+
+### 1. Update the uploaded app
+
+- upload the new APK to BrowserStack
+- replace `BROWSERSTACK_APP_ANDROID` in GitHub Secrets or local `.env`
+
+### 2. Turn WebView mode back on
+
+Set:
+
+```bash
+BROWSERSTACK_WEBVIEW_ENABLED=true
+```
+
+Places to update if you want BrowserStack full hybrid mode by default:
+- local `.env`
+- GitHub Actions env in [smoke.yml](C:\Users\Kanat\Documents\New%20project\.github\workflows\smoke.yml)
+- GitHub Actions env in [manual.yml](C:\Users\Kanat\Documents\New%20project\.github\workflows\manual.yml)
+
+### 3. Validate with a minimal BrowserStack WebView probe
+
+Run only the entry test first:
+
+```bash
+pytest tests/smoke/test_smoke_suite.py -k "onlineduken_entry" -q -s
+```
+
+Expected result:
+- BrowserStack session starts
+- `OnlineDuken` opens
+- framework switches from `NATIVE_APP` to `WEBVIEW`
+
+### 4. Expand BrowserStack smoke markers
+
+Current temporary push workflow runs:
+
+```bash
+pytest -m "smoke and browserstack_safe and not manual" -n 2
+```
+
+To return to the full hybrid BrowserStack smoke, change it back to:
+
+```bash
+pytest -m "smoke and not manual" -n 2
+```
+
+### 5. Re-check deferred BrowserStack flows
+
+After WebView is confirmed, re-validate in this order:
+- `test_smoke_onlineduken_entry`
+- `test_smoke_catalog_has_suppliers`
+- `test_smoke_orders_navigation`
+- `test_smoke_bonuses_navigation_and_history`
+- payment and QR flows
+
+### 6. Keep the temporary split only if the probe still fails
+
+If BrowserStack still cannot switch to `WEBVIEW`, revert only the app reference and keep:
+- `BROWSERSTACK_WEBVIEW_ENABLED=false`
+- BrowserStack marker expression:
+  - `smoke and browserstack_safe and not manual`
+
+This lets BrowserStack stay green while local hybrid coverage continues to prove the full product flow.
 
 QR smoke generation:
 - the project can now generate QR PNG assets from templates instead of requiring a manually prepared file

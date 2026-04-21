@@ -120,8 +120,14 @@ class Settings:
     browserstack_android_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_ANDROID_OS_VERSION", "14.0"))
     browserstack_ios_device: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_DEVICE", "iPhone 15"))
     browserstack_ios_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_OS_VERSION", "17"))
-    browserstack_project_name: str = field(default_factory=lambda: _env("BROWSERSTACK_PROJECT_NAME", "OnlineDuken E2E"))
+    browserstack_project_name: str = field(default_factory=lambda: _env("BROWSERSTACK_PROJECT_NAME", "B2B Mobile Demo"))
     browserstack_build_name: str = field(default_factory=lambda: _env("BROWSERSTACK_BUILD_NAME", "local-dev"))
+    browserstack_webview_enabled: bool = field(default_factory=lambda: _bool_env("BROWSERSTACK_WEBVIEW_ENABLED", False))
+    web_browser: str = field(default_factory=lambda: _env("WEB_BROWSER", "chrome").lower())
+    web_headless: bool = field(default_factory=lambda: _bool_env("WEB_HEADLESS", False))
+    web_base_url: str = field(
+        default_factory=lambda: _env("WEB_BASE_URL", "https://b2b.test.onlinebank.kz/web/customer-frontend/")
+    )
 
     phone_number: str = field(default_factory=lambda: _env("PHONE_NUMBER", "7772229999"))
     sms_code: str = field(default_factory=lambda: _env("SMS_CODE", "123456"))

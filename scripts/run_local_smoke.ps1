@@ -2,9 +2,11 @@ param(
     [int]$Workers = 2,
     [switch]$SafeSmoke,
     [switch]$BootstrapOnly,
+    [switch]$Allure,
     [string]$EntryMode = "token",
     [string]$BaseAvdName = "Medium_Phone_API_36.0",
-    [string]$ParallelAvdName = "Medium_Phone_Parallel"
+    [string]$ParallelAvdName = "Medium_Phone_Parallel",
+    [string]$AllureResultsDir = "allure-results"
 )
 
 $ErrorActionPreference = "Stop"
@@ -361,6 +363,9 @@ if ($BootstrapOnly) {
 $pytestArgs = @("-m", "smoke", "-q")
 if ($Workers -gt 1) {
     $pytestArgs += @("-n", "$Workers")
+}
+if ($Allure) {
+    $pytestArgs += @("--alluredir", $AllureResultsDir)
 }
 if ($SafeSmoke) {
     $pytestArgs += @("tests\smoke\test_smoke_suite.py", "-k", "onlineduken_entry or catalog_has_suppliers or orders_navigation or bonuses_navigation_and_history")

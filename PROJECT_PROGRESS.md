@@ -168,6 +168,92 @@ Update this file after:
   - keep QR/payment and non-mutating UI smoke active
   - re-enable cart smoke after the user prepares a stable supplier specifically for automation
 
+## Update On 2026-04-20 (Allure Reporting Added)
+
+- `Allure` reporting was added on top of the current `pytest` project.
+- Integration now includes:
+  - `allure-pytest` dependency in the project
+  - smoke tests labeled with `epic / feature / story / title`
+  - QR flow split into readable `Allure` steps
+  - failed tests automatically attaching:
+    - screenshot
+    - page source
+    - driver metadata
+    - pytest failure text
+  - auto-generated `environment.properties` when tests are run with `--alluredir`
+- Local launcher support was added:
+  - `scripts/run_local_smoke.ps1 -Allure`
+- Practical result:
+  - existing console output and artifact behavior remain useful
+  - `Allure` becomes the readable report layer for local work and future CI artifacts
+
+## Update On 2026-04-20 (BrowserStack Connectivity Verified)
+
+- Real BrowserStack App Automate connectivity was verified against:
+  - project: `B2B Mobile Demo`
+  - app: `bs://2824992f98ef03a4740dc5931569b2838d5a5ce6`
+  - device: `Samsung Galaxy S24`
+  - Android version: `14.0`
+- The framework was adjusted so BrowserStack authentication works for raw Appium sessions.
+- Actual BrowserStack sessions were created successfully for both:
+  - single-session connectivity check
+  - parallel `pytest -n 2` smoke check
+- Current BrowserStack-specific blocker:
+  - `OnlineDuken` entry fails while switching to `WEBVIEW`
+  - BrowserStack Appium returns errors such as:
+    - `Failed to get sockets matching: @webview_devtools_remote_*`
+    - `make sure the app has its WebView configured for debugging`
+- Interpretation:
+  - BrowserStack access, app upload reference, and remote session creation are working
+  - the remaining blocker is hybrid WebView automation on BrowserStack, not account connectivity
+- Relevant BrowserStack runs captured on `2026-04-20`:
+  - build `local-connect-check-20260420`
+  - build `local-parallel-check-20260420`
+
+## Update On 2026-04-21 (BrowserStack Smoke Split)
+
+- BrowserStack smoke is now intentionally split from the local hybrid smoke baseline.
+- Reason:
+  - BrowserStack `App Automate` still cannot switch the current stage builds into the `OnlineDuken` `WEBVIEW`
+  - the blocking error remains `Failed to get sockets matching: @webview_devtools_remote_*`
+- Practical decision:
+  - keep the overall project foundation hybrid
+  - keep local smoke and future BrowserStack target state centered on native + WebView automation
+  - but run only `browserstack_safe` native-shell checks in BrowserStack until a build with explicit `WebView.setWebContentsDebuggingEnabled(true)` for `OnlineDuken` is available
+- New BrowserStack-safe scope:
+  - app shell is reachable
+  - native `OnlineDuken` container is reachable
+- Current BrowserStack controls:
+  - marker: `browserstack_safe`
+  - env flag: `BROWSERSTACK_WEBVIEW_ENABLED=false`
+- Verification result:
+  - BrowserStack-safe smoke was run in parallel with `pytest -m "smoke and browserstack_safe" -n 2`
+  - result: `2 passed`
+- Recovery path is now documented in `README.md`:
+  - upload the new APK
+  - set `BROWSERSTACK_WEBVIEW_ENABLED=true`
+  - probe `onlineduken_entry`
+  - switch workflow marker expression back to full smoke
+
+## Update On 2026-04-21 (Separate OnlineDuken Web Suite Added)
+
+- A dedicated browser-based `OnlineDuken` suite was added so web coverage can continue even while BrowserStack hybrid automation is split.
+- New implementation pieces:
+  - `mobile_automation/web_driver_factory.py`
+  - `mobile_automation/web_flows.py`
+  - `tests/web/test_onlineduken_web_suite.py`
+- New marker:
+  - `web`
+- Current browser-suite coverage:
+  - authenticated home page load
+  - catalog state
+  - orders page
+  - bonuses page and history link
+  - more page
+- Validation status:
+  - test collection passes
+  - a live browser run currently skips cleanly when no valid `B2B_AUTH_URL` / `B2B_OB_AUTH_TOKEN` is present in the local environment
+
 ## Update On 2026-04-16 (Context Split)
 
 - `OnlineDuken` should now be treated as a mixed flow, not as pure `WebView`.

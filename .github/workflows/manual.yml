@@ -30,8 +30,9 @@ jobs:
       BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
       BROWSERSTACK_APP_ANDROID: ${{ secrets.BROWSERSTACK_APP_ANDROID }}
       BROWSERSTACK_APP_IOS: ${{ secrets.BROWSERSTACK_APP_IOS }}
-      BROWSERSTACK_PROJECT_NAME: OnlineDuken E2E
+      BROWSERSTACK_PROJECT_NAME: B2B Mobile Demo
       BROWSERSTACK_BUILD_NAME: manual-${{ github.ref_name }}-${{ github.run_number }}
+      BROWSERSTACK_WEBVIEW_ENABLED: false
       PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
       SMS_CODE: ${{ secrets.SMS_CODE }}
       PIN_CODE: ${{ secrets.PIN_CODE }}

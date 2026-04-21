@@ -1,12 +1,14 @@
 from __future__ import annotations
 
+import allure
 import pytest
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from mobile_automation.flows import click_web_element, open_onlineduken_route
+from mobile_automation.flows import click_web_element, open_onlineduken_route, wait_for_any
+from mobile_automation.pages.native import B2BWebViewPage, LoginPage, MainHomePage, PasscodePage
 from mobile_automation.pages.web import (
     BonusesPage,
     CartPage,
@@ -284,48 +286,121 @@ def _submit_order_from_cart(driver) -> bool:
     return True
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("BrowserStack Safe Smoke")
+@allure.story("Native Shell")
+@allure.title("Open app shell and detect login or home")
+@pytest.mark.smoke
+@pytest.mark.native
+@pytest.mark.browserstack_safe
+def test_smoke_app_shell_is_reachable(driver):
+    with allure.step("Verify that the app opens to login, passcode, or main home shell"):
+        locator = WebDriverWait(driver, 30).until(
+            lambda current_driver: wait_for_any(
+                current_driver,
+                [
+                    LoginPage.PHONE_INPUT,
+                    PasscodePage.INPUT,
+                    MainHomePage.CONTRACT_SELECTOR,
+                    MainHomePage.ONLINE_DUKEN_SHORTCUT,
+                    MainHomePage.ONLINE_DUKEN_SECTION,
+                ],
+                timeout=2,
+            )
+        )
+        assert locator in {
+            LoginPage.PHONE_INPUT,
+            PasscodePage.INPUT,
+            MainHomePage.CONTRACT_SELECTOR,
+            MainHomePage.ONLINE_DUKEN_SHORTCUT,
+            MainHomePage.ONLINE_DUKEN_SECTION,
+        }
+
+
+@allure.epic("OnlineDuken")
+@allure.feature("BrowserStack Safe Smoke")
+@allure.story("Native Shell")
+@allure.title("Reach OnlineDuken native container")
+@pytest.mark.smoke
+@pytest.mark.native
+@pytest.mark.browserstack_safe
+def test_smoke_onlineduken_native_container_entry(onlineduken_native_shell_driver):
+    with allure.step("Verify that the native OnlineDuken WebView container is present"):
+        assert onlineduken_native_shell_driver.find_elements(*B2BWebViewPage.WEBVIEW), (
+            "OnlineDuken native WebView container was not detected."
+        )
+
+
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Entry")
+@allure.title("Open OnlineDuken")
 @pytest.mark.smoke
 @pytest.mark.webview
 def test_smoke_onlineduken_entry(auth_smoke_driver):
-    assert "/web/customer-frontend" in auth_smoke_driver.current_url
+    with allure.step("Verify that OnlineDuken home route is open"):
+        assert "/web/customer-frontend" in auth_smoke_driver.current_url
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Catalog")
+@allure.title("Open catalog and validate supplier page state")
 @pytest.mark.smoke
 @pytest.mark.webview
 def test_smoke_catalog_has_suppliers(ui_smoke_driver):
-    _open_catalog(ui_smoke_driver)
-    WebDriverWait(ui_smoke_driver, 30).until(lambda current_driver: _catalog_page_is_ready(current_driver))
-    supplier_cards = ui_smoke_driver.find_elements(*CatalogPage.SUPPLIER_CARDS)
-    empty_state = ui_smoke_driver.find_elements(*CatalogPage.EMPTY_STATE)
-    assert supplier_cards or empty_state or _catalog_page_is_ready(ui_smoke_driver), (
-        "Catalog did not show supplier cards, a valid empty state, or the distributor page structure."
-    )
+    with allure.step("Open catalog"):
+        _open_catalog(ui_smoke_driver)
+    with allure.step("Validate supplier cards or a valid empty state"):
+        WebDriverWait(ui_smoke_driver, 30).until(lambda current_driver: _catalog_page_is_ready(current_driver))
+        supplier_cards = ui_smoke_driver.find_elements(*CatalogPage.SUPPLIER_CARDS)
+        empty_state = ui_smoke_driver.find_elements(*CatalogPage.EMPTY_STATE)
+        assert supplier_cards or empty_state or _catalog_page_is_ready(ui_smoke_driver), (
+            "Catalog did not show supplier cards, a valid empty state, or the distributor page structure."
+        )
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Orders")
+@allure.title("Open orders page")
 @pytest.mark.smoke
 @pytest.mark.webview
 def test_smoke_orders_navigation(ui_smoke_driver):
-    try:
-        click_web_element(ui_smoke_driver, OnlineDukenHomePage.ORDERS_LINK)
-    except TimeoutException:
-        open_onlineduken_route(ui_smoke_driver, "orders")
-    title = wait(ui_smoke_driver, OrdersPage.TITLE)
-    assert "\u0437\u0430\u043a\u0430\u0437" in title.text.lower()
+    with allure.step("Open orders page"):
+        try:
+            click_web_element(ui_smoke_driver, OnlineDukenHomePage.ORDERS_LINK)
+        except TimeoutException:
+            open_onlineduken_route(ui_smoke_driver, "orders")
+    with allure.step("Validate orders title"):
+        title = wait(ui_smoke_driver, OrdersPage.TITLE)
+        assert "\u0437\u0430\u043a\u0430\u0437" in title.text.lower()
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Bonuses")
+@allure.title("Open bonuses and verify history entry")
 @pytest.mark.smoke
 @pytest.mark.webview
 def test_smoke_bonuses_navigation_and_history(ui_smoke_driver):
-    try:
-        click_web_element(ui_smoke_driver, OnlineDukenHomePage.BONUSES_LINK)
-    except TimeoutException:
-        open_onlineduken_route(ui_smoke_driver, "bonuses")
-    title = wait(ui_smoke_driver, BonusesPage.TITLE)
-    assert "\u0431\u043e\u043d\u0443\u0441" in title.text.lower()
-    history_links = ui_smoke_driver.find_elements(*BonusesPage.HISTORY_LINK)
-    assert history_links, "Bonus history link is not visible."
+    with allure.step("Open bonuses page"):
+        try:
+            click_web_element(ui_smoke_driver, OnlineDukenHomePage.BONUSES_LINK)
+        except TimeoutException:
+            open_onlineduken_route(ui_smoke_driver, "bonuses")
+    with allure.step("Validate bonuses title and history link"):
+        title = wait(ui_smoke_driver, BonusesPage.TITLE)
+        assert "\u0431\u043e\u043d\u0443\u0441" in title.text.lower()
+        history_links = ui_smoke_driver.find_elements(*BonusesPage.HISTORY_LINK)
+        assert history_links, "Bonus history link is not visible."
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.feature("Payments")
+@allure.story("QR Payment")
+@allure.title("Complete QR payment flow via gallery: {qr_case_name}")
 @pytest.mark.smoke
 @pytest.mark.payments
 @pytest.mark.native
@@ -339,23 +414,35 @@ def test_smoke_qr_payment_flow(payments_smoke_driver, settings, generated_qr_cas
         )
     if settings.is_browserstack:
         pytest.skip("Local QR gallery upload is implemented. BrowserStack media upload will be added in the CI step.")
-    result = run_qr_gallery_payment_flow(payments_smoke_driver, settings, qr_case)
-    assert result
+    with allure.step(f"Run QR gallery payment flow for case '{qr_case_name}'"):
+        result = run_qr_gallery_payment_flow(payments_smoke_driver, settings, qr_case)
+        assert result
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.feature("Payments")
+@allure.story("Manual Invoice Payment")
+@allure.title("Open invoice payment from home")
 @pytest.mark.smoke
 @pytest.mark.payments
 @pytest.mark.webview
 def test_smoke_invoice_payment_from_home(payments_smoke_driver, settings):
     if not settings.invoice_reference:
         pytest.skip("INVOICE_REFERENCE is not configured yet.")
-    click_web_element(payments_smoke_driver, OnlineDukenHomePage.PAYMENT_LINK)
-    title = wait(payments_smoke_driver, PaymentPage.TITLE)
-    assert "\u043e\u043f\u043b\u0430\u0442" in title.text.lower()
-    click_web_element(payments_smoke_driver, PaymentPage.MANUAL_PAYMENT_TAB)
+    with allure.step("Open supplier payment page from home"):
+        click_web_element(payments_smoke_driver, OnlineDukenHomePage.PAYMENT_LINK)
+        title = wait(payments_smoke_driver, PaymentPage.TITLE)
+        assert "\u043e\u043f\u043b\u0430\u0442" in title.text.lower()
+    with allure.step("Open manual payment tab"):
+        click_web_element(payments_smoke_driver, PaymentPage.MANUAL_PAYMENT_TAB)
     pytest.skip("Invoice payment form locators need to be finalized against live test data.")
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Cart")
+@allure.title("Create order from catalog")
 @pytest.mark.smoke
 @pytest.mark.webview
 @pytest.mark.skip(reason=CART_FLOW_SKIP_REASON)
@@ -374,6 +461,10 @@ def test_smoke_cart_and_order_creation(payments_smoke_driver, settings):
     assert _submit_order_from_cart(payments_smoke_driver), "Order was not created successfully from cart."
 
 
+@allure.epic("OnlineDuken")
+@allure.feature("Smoke")
+@allure.story("Cart")
+@allure.title("Create order from a product card on home")
 @pytest.mark.smoke
 @pytest.mark.webview
 @pytest.mark.skip(reason=CART_FLOW_SKIP_REASON)
