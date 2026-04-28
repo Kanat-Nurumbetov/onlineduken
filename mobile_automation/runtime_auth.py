@@ -9,7 +9,7 @@ from pathlib import Path
 
 import requests
 
-from mobile_automation.config import Settings, normalize_b2b_auth_url
+from mobile_automation.config import Settings, is_valid_b2b_auth_url, normalize_b2b_auth_url
 
 
 def _extract_auth_url(raw_output: str) -> str:
@@ -47,11 +47,13 @@ def _extract_auth_url(raw_output: str) -> str:
 
         url_match = re.search(r"https?://\S+", stripped_value)
         if url_match:
-            return normalize_b2b_auth_url(raw_url=url_match.group(0).strip())
+            auth_url = normalize_b2b_auth_url(raw_url=url_match.group(0).strip())
+            return auth_url if is_valid_b2b_auth_url(auth_url) else ""
 
         normalized_key = key_hint.strip().lower().replace("-", "_")
         if normalized_key in {"ob_auth_token", "token", "access_token"}:
-            return normalize_b2b_auth_url(raw_token=stripped_value)
+            auth_url = normalize_b2b_auth_url(raw_token=stripped_value)
+            return auth_url if is_valid_b2b_auth_url(auth_url) else ""
 
         return ""
 
@@ -71,11 +73,13 @@ def _extract_auth_url(raw_output: str) -> str:
 
     url_match = re.search(r"https?://\S+", stripped)
     if url_match:
-        return normalize_b2b_auth_url(raw_url=url_match.group(0).strip())
+        auth_url = normalize_b2b_auth_url(raw_url=url_match.group(0).strip())
+        return auth_url if is_valid_b2b_auth_url(auth_url) else ""
 
     lines = [line.strip() for line in stripped.splitlines() if line.strip()]
     if len(lines) == 1 and " " not in lines[0]:
-        return normalize_b2b_auth_url(raw_token=lines[0])
+        auth_url = normalize_b2b_auth_url(raw_token=lines[0])
+        return auth_url if is_valid_b2b_auth_url(auth_url) else ""
 
     return ""
 
@@ -92,7 +96,8 @@ def load_cached_auth_url(settings: Settings) -> str:
         payload = json.loads(cache_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return ""
-    return normalize_b2b_auth_url(raw_url=str(payload.get("auth_url", "")).strip())
+    auth_url = normalize_b2b_auth_url(raw_url=str(payload.get("auth_url", "")).strip())
+    return auth_url if is_valid_b2b_auth_url(auth_url) else ""
 
 
 def save_cached_auth_url(settings: Settings, auth_url: str, source: str) -> None:
@@ -259,7 +264,7 @@ def fetch_auth_url_via_app_login(settings: Settings) -> str:
 
 def resolve_shared_b2b_auth_url(settings: Settings) -> str:
     direct_auth_url = settings.resolved_b2b_auth_url
-    if direct_auth_url:
+    if direct_auth_url and is_valid_b2b_auth_url(direct_auth_url):
         save_cached_auth_url(settings, direct_auth_url, source="env")
         return direct_auth_url
 

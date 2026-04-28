@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import os
+import json
 import re
 import subprocess
 import sys
+import time
 from contextlib import suppress
 from pathlib import Path
 from urllib.parse import urlparse
@@ -11,6 +13,7 @@ from urllib.request import urlopen
 
 import pytest
 from appium.webdriver.appium_service import AppiumService
+from selenium.common.exceptions import WebDriverException
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -129,6 +132,23 @@ def _safe_allure_name(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_") or "artifact"
 
 
+def _xdist_worker_index() -> int:
+    worker_id = os.getenv("PYTEST_XDIST_WORKER", "gw0")
+    if not worker_id.startswith("gw"):
+        return 0
+    with suppress(ValueError):
+        return int(worker_id.removeprefix("gw"))
+    return 0
+
+
+def _stagger_browserstack_login(settings: Settings) -> None:
+    if not settings.is_browserstack or settings.onlineduken_entry_mode != "full":
+        return
+    delay_sec = _xdist_worker_index() * max(settings.browserstack_login_stagger_sec, 0)
+    if delay_sec > 0:
+        time.sleep(delay_sec)
+
+
 def pytest_configure(config: pytest.Config) -> None:
     worker_input = getattr(config, "workerinput", None)
     if worker_input:
@@ -241,11 +261,32 @@ def _iter_unique_drivers(item: pytest.Item):
         yield driver
 
 
+def _mark_browserstack_session(driver, status: str, reason: str) -> None:
+    payload = {
+        "action": "setSessionStatus",
+        "arguments": {
+            "status": status,
+            "reason": reason[:250],
+        },
+    }
+    with suppress(Exception):
+        driver.execute_script("browserstack_executor: " + json.dumps(payload))
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
     outcome = yield
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)
+
+    if Settings().is_browserstack and report.when in {"setup", "call"}:
+        if report.failed:
+            reason = report.longreprtext if hasattr(report, "longreprtext") else str(report.longrepr)
+            for driver in _iter_unique_drivers(item):
+                _mark_browserstack_session(driver, "failed", reason or f"{item.name} failed")
+        elif report.when == "call" and report.passed:
+            for driver in _iter_unique_drivers(item):
+                _mark_browserstack_session(driver, "passed", f"{item.name} passed")
 
     if not allure_enabled():
         return
@@ -329,6 +370,7 @@ def appium_service(settings: Settings):
 
 @pytest.fixture(scope="function")
 def driver(settings: Settings, appium_service):
+    _stagger_browserstack_login(settings)
     driver = build_driver(settings, session_name="OnlineDuken smoke")
     yield driver
     with suppress(Exception):
@@ -379,7 +421,15 @@ def web_auth_url(settings: Settings) -> str:
 
 @pytest.fixture(scope="function")
 def web_driver(settings: Settings, web_auth_url: str):
-    driver = build_web_driver(settings)
+    try:
+        driver = build_web_driver(settings, session_name="OnlineDuken web suite")
+    except WebDriverException as exc:
+        if settings.is_browserstack and "Automate testing time expired" in str(exc):
+            pytest.skip(
+                "BrowserStack web session could not be created because the current account "
+                "does not have active Automate time available."
+            )
+        raise
     try:
         open_authenticated_onlineduken(driver, web_auth_url)
         yield driver

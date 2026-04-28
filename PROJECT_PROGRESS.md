@@ -254,6 +254,59 @@ Update this file after:
   - test collection passes
   - a live browser run currently skips cleanly when no valid `B2B_AUTH_URL` / `B2B_OB_AUTH_TOKEN` is present in the local environment
 
+## Update On 2026-04-22 (Auth Bootstrap Clarified And Main-First Entry Tightened)
+
+- The meaning of `B2B_AUTH_URL` and shared auth bootstrap was clarified and documented more explicitly.
+- Practical interpretation:
+  - `B2B_AUTH_URL` is the reusable authenticated `OnlineDuken` URL
+  - `B2B_OB_AUTH_TOKEN` is only the token portion used to build that URL
+  - `bootstrap` is the one-time resolution step that obtains one reusable auth URL before parallel workers start
+- The framework already supports these bootstrap sources:
+  - direct env URL/token
+  - cached runtime auth URL
+  - internal auth endpoint
+  - custom fetch command
+  - one real app login followed by auth extraction from the opened `OnlineDuken` session
+- BrowserStack-safe smoke was tightened so the native-shell test no longer stops at the phone field alone:
+  - it now completes login when needed
+  - it verifies that the real native main home becomes reachable
+  - it still remains inside the BrowserStack-safe native scope
+- `OnlineDuken` token-mode entry was also tightened:
+  - a generic foreign `WEBVIEW_*` context is no longer treated as success by itself
+  - this prevents false positives such as non-app webview shells from being mistaken for the real in-app `OnlineDuken` container
+  - when token-mode cannot open the target container directly, the flow now falls back to the normal app path:
+    - complete login
+    - reach main home
+    - select the expected contract
+    - open `OnlineDuken` from the main screen
+- This moves the implementation closer to the intended business flow:
+  - first real login through the app
+  - then reuse the resolved auth URL across later smoke workers and sessions
+
+## Update On 2026-04-22 (BrowserStack Safe Smoke Green Again)
+
+- The BrowserStack-safe smoke pack was revalidated with a real parallel cloud run.
+- Successful command:
+  - `pytest tests\smoke\test_smoke_suite.py -k "browserstack_safe" -n 2 -q -s -ra`
+- Effective runtime configuration:
+  - `TARGET=browserstack`
+  - `PLATFORM=android`
+  - `ONLINEDUKEN_ENTRY_MODE=token`
+  - `BROWSERSTACK_WEBVIEW_ENABLED=false`
+  - `BROWSERSTACK_APP_ANDROID=bs://c275dbb0208fb6c0f990a5433bf793fe9f5329dc`
+- Result:
+  - `2 passed`
+- BrowserStack build details:
+  - build name: `codex-browserstack-safe-20260422-run3`
+  - hashed id: `2dd4beae65ea70b47243c30299a2589f948b0b8c`
+- Report saved to:
+  - `artifacts/browserstack/codex-browserstack-safe-20260422-run3/REPORT.md`
+- Final fixes that made this run green:
+  - BrowserStack-safe login now completes the real auth flow up to native main home
+  - token-mode `OnlineDuken` entry rejects unrelated foreign webview contexts
+  - SMS confirmation and PIN entry are now treated as different native states
+  - PIN entry has a direct-input fallback for remote-device layouts where keypad bounds are not present
+
 ## Update On 2026-04-16 (Context Split)
 
 - `OnlineDuken` should now be treated as a mixed flow, not as pure `WebView`.
@@ -595,6 +648,49 @@ Update this file after:
   - if a shared session becomes unhealthy, the managed session layer can restart only that session instead of poisoning the rest of the chain
 - QR generation was tightened:
   - QR payloads now use unique numeric values per run
+
+## Update On 2026-04-27 (BrowserStack Stability Pass)
+
+- A fresh project audit was performed against the current BrowserStack and pytest/Appium strategy.
+- BrowserStack-safe smoke remains the primary cloud path until a build with explicit `OnlineDuken` WebView debugging is available.
+- The BrowserStack-safe path now intentionally uses full mobile login for every cloud test session:
+  - `ONLINEDUKEN_ENTRY_MODE=full`
+  - `B2B_SHARED_AUTH_BOOTSTRAP=false`
+  - `BROWSERSTACK_WEBVIEW_ENABLED=false`
+  - `pytest -m "smoke and browserstack_safe and not manual" -n 3`
+- A dedicated local BrowserStack demo launcher was added:
+  - `scripts/run_browserstack_smoke.ps1`
+- CI smoke was updated to:
+  - run BrowserStack-safe smoke with three xdist workers
+  - upload raw `allure-results` as a GitHub Actions artifact
+  - keep the `ENABLE_PUSH_SMOKE=false` kill switch
+- Healthcheck was tightened:
+  - plain URLs now require `2xx/3xx`
+  - exact expected statuses can be configured with `URL|200` or `URL|200,204`
+  - `404` is no longer treated as an available environment by default
+- Auth bootstrap was tightened:
+  - cached/shared auth URLs must be real `/web/customer-frontend/auth?ob-auth-token=...` URLs
+  - generic `customer-frontend` routes are rejected to avoid false authenticated states
+- BrowserStack driver creation was cleaned up:
+  - credentials are now passed through Selenium/Appium client config instead of embedding them in the hub URL
+  - BrowserStack Appium/device logs are explicitly enabled in capabilities
+  - pytest now marks BrowserStack sessions as passed/failed through `browserstack_executor`
+- A root-level `browserstack.yml` was added as an optional SDK migration layer.
+- Current decision on BrowserStack SDK:
+  - keep direct Appium + pytest as the stable primary path for now
+  - use `browserstack.yml` later if the team wants SDK-managed reporting, app upload, or Test Observability
+  - do not migrate immediately while BrowserStack-safe mobile login stability is the main priority
+- Real BrowserStack verification after the stability pass:
+  - build name: `audit-browserstack-full-login-20260427-clean`
+  - build hashed id: `500d123b47e61f7e863d8258c7dbc53199a0529b`
+  - command: `scripts\run_browserstack_smoke.ps1 -Workers 3 -Allure`
+  - result: `2 passed`
+  - runtime: `128.16s`
+  - local `allure-results` was cleaned before the final successful run
+- Important BrowserStack finding:
+  - fully simultaneous logins with the same test phone can invalidate/expire the OTP flow in another worker
+  - the framework now staggers BrowserStack full-login starts with `BROWSERSTACK_LOGIN_STAGGER_SEC`
+  - if the smoke set grows beyond two safe tests, the best long-term improvement is a pool of independent test users, one per worker
   - this prevents the main happy-path QR smoke from accidentally reusing an older QR and falling into the business flow for re-signing a pending payment
 - Live verification after the refactor:
   - `test_smoke_onlineduken_entry`

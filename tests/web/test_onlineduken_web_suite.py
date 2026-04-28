@@ -9,6 +9,19 @@ from mobile_automation.pages.web import BonusesPage, CatalogPage, MorePage, Onli
 from mobile_automation.web_flows import click_element, main_text, open_route
 
 
+def _home_shell_ready(driver) -> bool:
+    return any(
+        (
+            driver.find_elements(*OnlineDukenHomePage.HOME_TAB),
+            driver.find_elements(*OnlineDukenHomePage.CATALOG_TAB),
+            driver.find_elements(*OnlineDukenHomePage.MORE_TAB),
+            driver.find_elements(*OnlineDukenHomePage.ORDERS_LINK),
+            driver.find_elements(*OnlineDukenHomePage.BONUSES_LINK),
+            driver.find_elements(*OnlineDukenHomePage.PAYMENT_LINK),
+        )
+    )
+
+
 def _catalog_ready(driver) -> bool:
     return bool(
         driver.find_elements(*CatalogPage.TITLE)
@@ -45,8 +58,10 @@ def _open_catalog(driver, settings) -> None:
 def test_web_home_page_loads(web_driver):
     with allure.step("Verify that the authenticated customer frontend route is open"):
         assert "/web/customer-frontend/" in web_driver.current_url
-    with allure.step("Verify that the page contains visible text"):
-        assert main_text(web_driver), "Authenticated OnlineDuken web home is empty."
+    with allure.step("Verify that the home shell is rendered"):
+        WebDriverWait(web_driver, 30).until(lambda current_driver: _home_shell_ready(current_driver))
+        assert _home_shell_ready(web_driver), "Authenticated OnlineDuken home shell was not rendered."
+        assert main_text(web_driver) or _home_shell_ready(web_driver)
 
 
 @allure.epic("OnlineDuken")

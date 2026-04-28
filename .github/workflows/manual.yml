@@ -23,9 +23,9 @@ jobs:
     env:
       TARGET: browserstack
       PLATFORM: ${{ inputs.platform }}
-      ONLINEDUKEN_ENTRY_MODE: token
-      B2B_SHARED_AUTH_BOOTSTRAP: true
-      B2B_APP_AUTH_BOOTSTRAP: true
+      ONLINEDUKEN_ENTRY_MODE: full
+      B2B_SHARED_AUTH_BOOTSTRAP: false
+      B2B_APP_AUTH_BOOTSTRAP: false
       BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
       BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
       BROWSERSTACK_APP_ANDROID: ${{ secrets.BROWSERSTACK_APP_ANDROID }}
@@ -33,6 +33,7 @@ jobs:
       BROWSERSTACK_PROJECT_NAME: B2B Mobile Demo
       BROWSERSTACK_BUILD_NAME: manual-${{ github.ref_name }}-${{ github.run_number }}
       BROWSERSTACK_WEBVIEW_ENABLED: false
+      BROWSERSTACK_LOGIN_STAGGER_SEC: 20
       PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
       SMS_CODE: ${{ secrets.SMS_CODE }}
       PIN_CODE: ${{ secrets.PIN_CODE }}
@@ -62,7 +63,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
+          pip install -r requirements-ci.txt
+          pip install -e . --no-deps
 
       - name: Check test environment availability
         id: envcheck
@@ -75,4 +77,12 @@ jobs:
           exit 1
 
       - name: Run selected tests
-        run: pytest -m "${{ inputs.marker }}"
+        run: pytest -m "${{ inputs.marker }}" -n 3 --alluredir=allure-results
+
+      - name: Upload Allure raw results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-manual-${{ github.run_number }}
+          path: allure-results
+          if-no-files-found: ignore

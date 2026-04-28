@@ -1,0 +1,30 @@
+# Optional BrowserStack SDK configuration.
+# Primary project runs still use direct Appium + pytest from mobile_automation/driver_factory.py.
+# Use this file only when intentionally running through:
+#   browserstack-sdk pytest -m "smoke and browserstack_safe and not manual"
+
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+framework: pytest
+
+app: ${BROWSERSTACK_APP_ANDROID}
+projectName: B2B Mobile Demo
+buildName: ${BROWSERSTACK_BUILD_NAME}
+
+platforms:
+  - platformName: android
+    deviceName: Samsung Galaxy S24
+    platformVersion: "14.0"
+    automationName: UiAutomator2
+
+parallelsPerPlatform: 3
+
+debug: true
+networkLogs: true
+appiumLogs: true
+deviceLogs: true
+acceptInsecureCerts: true
+
+testContextOptions:
+  skipSessionName: true
+  skipSessionStatus: true

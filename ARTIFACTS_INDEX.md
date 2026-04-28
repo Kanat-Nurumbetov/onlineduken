@@ -155,3 +155,23 @@ If only a few screenshots are needed:
 - `C:\Users\Kanat\Documents\New project\artifacts\qr_probe_gallery_picker_native_path.xml`
 - `C:\Users\Kanat\Documents\New project\artifacts\qr_probe_after_photo_select_native.xml`
 - `C:\Users\Kanat\Documents\New project\artifacts\qr_payment_invalid_bin_toast.xml`
+
+## Update On 2026-04-22 (Successful BrowserStack Safe Smoke)
+
+- `C:\Users\Kanat\Documents\New project\artifacts\browserstack\codex-browserstack-safe-20260422-run3\REPORT.md`
+  - consolidated report for the successful parallel BrowserStack-safe run
+  - includes build id, session ids, command, scope, and the fixes that made the run green
+
+## Update On 2026-04-27 (BrowserStack Full-Login Safe Smoke)
+
+- `C:\Users\Kanat\Documents\New project\artifacts\browserstack\audit-browserstack-full-login-20260427-staggered\REPORT.md`
+  - consolidated report for the successful BrowserStack-safe run with full login
+  - command used `scripts\run_browserstack_smoke.ps1 -Workers 3 -Allure`
+  - BrowserStack build id: `fabc5f2e7316efaffddd115804a95c63d666b437`
+  - BrowserStack result: `2 passed`
+  - includes the finding that same-user parallel OTP flows need worker login staggering
+- `C:\Users\Kanat\Documents\New project\artifacts\browserstack\audit-browserstack-full-login-20260427-clean\REPORT.md`
+  - latest clean rerun after adding automatic `allure-results` cleanup
+  - BrowserStack build id: `500d123b47e61f7e863d8258c7dbc53199a0529b`
+  - BrowserStack result: `2 passed`
+  - local `allure-results` now contains only this last run

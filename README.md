@@ -50,6 +50,7 @@ Important context files in project root:
 - `PROJECT_PROGRESS.md`
 - `INTERNAL_AUTH_SETUP.md`
 - `SMOKE_RUN_REPORT_2026-04-19.md`
+- `BROWSERSTACK_RUN_REPORT_2026-04-27.md`
 
 ## Setup
 
@@ -57,7 +58,8 @@ Important context files in project root:
 2. Install dependencies:
 
 ```bash
-pip install -e .
+pip install -r requirements-ci.txt
+pip install -e . --no-deps
 ```
 
 3. Copy `.env.example` to `.env` and fill values.
@@ -114,16 +116,16 @@ py -3.12 -m pytest tests\smoke\test_smoke_suite.py -k "qr_payment_flow" -q -s -r
 
 Parallel smoke on BrowserStack:
 
-```bash
-$env:TARGET='browserstack'
-pytest -m "smoke and browserstack_safe" -n 2
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_browserstack_smoke.ps1 -Workers 3 -Allure
 ```
 
 Important:
 - local parallel execution is intentionally blocked when `TARGET=local`
 - the current local setup uses one emulator/Appium device session, so `-n > 1` on the same emulator would be unstable rather than truly parallel
 - the current safe-smoke design is parallel-ready for BrowserStack workers, where each worker gets its own isolated mobile session
-- if `ONLINEDUKEN_ENTRY_MODE=token`, workers can share one bootstrap-resolved auth URL through the internal login endpoint, `B2B_AUTH_FETCH_COMMAND`, `B2B_AUTH_URL`, or the runtime cache file
+- BrowserStack-safe smoke now defaults to `ONLINEDUKEN_ENTRY_MODE=full`, so every BrowserStack test performs a real app login instead of relying on deeplink/token entry
+- token bootstrap stays available for local WebUI and future optimized runs, but it is not the default BrowserStack-safe path
 - until a BrowserStack-ready build with explicit `OnlineDuken` WebView debugging is available, BrowserStack push smoke is intentionally split into native-shell checks only
 - the core project direction remains hybrid:
   - BrowserStack-safe smoke now validates native shell reachability
@@ -281,6 +283,37 @@ $env:B2B_OB_AUTH_TOKEN='...'
 pytest -m smoke
 ```
 
+### What `B2B_AUTH_URL` / bootstrap means
+
+`B2B_AUTH_URL` is a fully prepared `OnlineDuken` authentication URL, for example:
+
+```text
+https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=...
+```
+
+The framework can also accept only the token itself through `B2B_OB_AUTH_TOKEN` and build the full URL automatically.
+
+In practical terms this URL is a reusable shortcut into the authenticated `OnlineDuken` web flow. It helps us avoid repeating the full web authorization sequence for every smoke test worker.
+
+`bootstrap` means the one-time step where the framework tries to obtain that reusable auth URL before the rest of the suite starts.
+
+Bootstrap sources are checked in this order:
+- direct env values: `B2B_AUTH_URL` or `B2B_OB_AUTH_TOKEN`
+- cached runtime auth URL from `artifacts/runtime/b2b_auth.json`
+- internal auth endpoint
+- custom fetch command
+- one real mobile login through the app, followed by extraction of a reusable auth URL from the opened `OnlineDuken` session
+
+Why this matters:
+- the first successful login can produce one reusable auth URL
+- pytest injects the same normalized auth URL into all parallel workers
+- later tests can reuse that auth URL instead of redoing phone, SMS, PIN, and in-WebView auth every time
+
+Important limitation:
+- auth bootstrap speeds up authentication reuse
+- it does **not** replace a BrowserStack build that lacks explicit `OnlineDuken` WebView debugging
+- if BrowserStack cannot expose the real in-app `WEBVIEW_kz.halyk.onlinebank.stage`, token reuse still helps with auth, but hybrid WebView automation will remain limited until the APK exposes the debuggable webview correctly
+
 Internal login endpoint bootstrap:
 
 ```bash
@@ -301,14 +334,18 @@ This path posts `client_id`, `client_secret`, and `grant_type=internal`, then tr
 If only a token is returned, the framework converts it into:
 - `https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=...`
 
+Auth URLs are validated before caching. The framework accepts only real auth URLs with `/web/customer-frontend/auth` and `ob-auth-token`; generic `customer-frontend` routes are rejected so workers do not reuse an unauthenticated shell by mistake.
+
 ## BrowserStack Split
 
 Current BrowserStack strategy is intentionally split because `App Automate` cannot yet switch into the `OnlineDuken` `WEBVIEW` for the current uploaded stage builds.
 
 What runs in BrowserStack right now:
 - `browserstack_safe` native smoke
-- app shell reachability
+- full native login in every BrowserStack test session
+- native main app home check
 - native entry into the `OnlineDuken` container
+- parallel execution with `pytest-xdist`, default demo target: `-n 3`
 
 What stays out of BrowserStack smoke for now:
 - all tests marked `webview`
@@ -321,6 +358,40 @@ BROWSERSTACK_WEBVIEW_ENABLED=false
 ```
 
 When a new build arrives with explicit `WebView.setWebContentsDebuggingEnabled(true)` for `OnlineDuken`, this flag can be turned on and BrowserStack smoke can be expanded back toward the hybrid baseline.
+
+Recommended BrowserStack demo command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_browserstack_smoke.ps1 -Workers 3 -Allure
+```
+
+This command uses:
+- `TARGET=browserstack`
+- `PLATFORM=android`
+- `ONLINEDUKEN_ENTRY_MODE=full`
+- `B2B_SHARED_AUTH_BOOTSTRAP=false`
+- `BROWSERSTACK_WEBVIEW_ENABLED=false`
+- `BROWSERSTACK_LOGIN_STAGGER_SEC=20`
+- marker expression `smoke and browserstack_safe and not manual`
+
+Why login staggering exists:
+- current BrowserStack-safe smoke uses one test phone across workers
+- if two workers request OTP at the same time, one session can receive `Истек код для авторизации`
+- staggering keeps the run xdist/BrowserStack-parallel but avoids same-user OTP races
+- the best long-term improvement is a pool of test users, one per parallel worker
+
+### BrowserStack SDK / browserstack.yml Position
+
+BrowserStack officially recommends the SDK path with a root-level `browserstack.yml` and `browserstack-sdk pytest`. A prepared `browserstack.yml` is included for that future path.
+
+Current project decision:
+- keep the direct Appium + pytest path as the primary stable path for now
+- use `browserstack.yml` as an optional migration layer, not as the only way to run tests
+- revisit SDK adoption after BrowserStack-safe smoke is consistently green and the team decides whether Test Observability / SDK-managed uploads are worth the extra abstraction
+
+Reason:
+- our direct path already handles project-specific markers, fallback login, Allure, environment healthcheck, BrowserStack-safe splitting, and CI toggles
+- the SDK can simplify BrowserStack reporting and config, but it also adds another wrapper that can obscure failures while we are still stabilizing the mobile flow
 
 ## How To Re-enable Full BrowserStack Hybrid Smoke
 
@@ -362,13 +433,13 @@ Expected result:
 Current temporary push workflow runs:
 
 ```bash
-pytest -m "smoke and browserstack_safe and not manual" -n 2
+pytest -m "smoke and browserstack_safe and not manual" -n 3 --alluredir=allure-results
 ```
 
 To return to the full hybrid BrowserStack smoke, change it back to:
 
 ```bash
-pytest -m "smoke and not manual" -n 2
+pytest -m "smoke and not manual" -n 3 --alluredir=allure-results
 ```
 
 ### 5. Re-check deferred BrowserStack flows
@@ -478,13 +549,15 @@ pytest -m smoke
 - `smoke.yml`
   - runs on push
   - checks environment availability first
-  - runs only `smoke`
-  - uses `token` entry mode and `pytest -n 2`
+  - runs only `smoke and browserstack_safe and not manual`
+  - uses full app login and `pytest -n 3`
+  - uploads raw `allure-results` as a GitHub Actions artifact
   - can be disabled temporarily with repository variable `ENABLE_PUSH_SMOKE=false`
   - can still be forced manually through `workflow_dispatch`
 - `manual.yml`
   - runs only via `workflow_dispatch`
   - can run `manual`, `smoke`, or custom marker expressions
+  - uses `pytest -n 3` and uploads raw `allure-results`
   - is the intended path for regression/manual suites
 
 ## Smoke Execution Model

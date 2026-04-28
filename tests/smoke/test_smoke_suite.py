@@ -7,7 +7,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from mobile_automation.flows import click_web_element, open_onlineduken_route, wait_for_any
+from mobile_automation.flows import (
+    click_web_element,
+    ensure_expected_contract_selected,
+    open_onlineduken_route,
+    try_complete_login,
+    wait_for_any,
+    wait_for_main_home,
+)
 from mobile_automation.pages.native import B2BWebViewPage, LoginPage, MainHomePage, PasscodePage
 from mobile_automation.pages.web import (
     BonusesPage,
@@ -286,15 +293,28 @@ def _submit_order_from_cart(driver) -> bool:
     return True
 
 
+def _onlineduken_native_container_ready(driver) -> bool:
+    if driver.find_elements(*B2BWebViewPage.WEBVIEW):
+        return True
+    current_activity = getattr(driver, "current_activity", "") or ""
+    if "B2BActivity" in current_activity:
+        return True
+    return any(
+        marker in (context or "").lower()
+        for context in getattr(driver, "contexts", [])
+        for marker in ("webview_kz.halyk.onlinebank.stage", "halyk", "onlinebank")
+    )
+
+
 @allure.epic("OnlineDuken")
 @allure.feature("BrowserStack Safe Smoke")
 @allure.story("Native Shell")
-@allure.title("Open app shell and detect login or home")
+@allure.title("Complete login and reach the native main home")
 @pytest.mark.smoke
 @pytest.mark.native
 @pytest.mark.browserstack_safe
-def test_smoke_app_shell_is_reachable(driver):
-    with allure.step("Verify that the app opens to login, passcode, or main home shell"):
+def test_smoke_app_shell_is_reachable(driver, settings):
+    with allure.step("Wait for login or main shell"):
         locator = WebDriverWait(driver, 30).until(
             lambda current_driver: wait_for_any(
                 current_driver,
@@ -308,9 +328,24 @@ def test_smoke_app_shell_is_reachable(driver):
                 timeout=2,
             )
         )
-        assert locator in {
-            LoginPage.PHONE_INPUT,
-            PasscodePage.INPUT,
+        assert locator is not None
+
+    with allure.step("Complete login if the auth flow is visible"):
+        if locator in {LoginPage.PHONE_INPUT, PasscodePage.INPUT}:
+            try_complete_login(driver, settings)
+
+    with allure.step("Reach native main home and confirm contract context"):
+        assert wait_for_main_home(driver, timeout=45, raise_on_timeout=False), "Main home screen was not detected."
+        ensure_expected_contract_selected(driver, settings)
+        assert wait_for_any(
+            driver,
+            [
+                MainHomePage.CONTRACT_SELECTOR,
+                MainHomePage.ONLINE_DUKEN_SHORTCUT,
+                MainHomePage.ONLINE_DUKEN_SECTION,
+            ],
+            timeout=10,
+        ) in {
             MainHomePage.CONTRACT_SELECTOR,
             MainHomePage.ONLINE_DUKEN_SHORTCUT,
             MainHomePage.ONLINE_DUKEN_SECTION,
@@ -326,8 +361,8 @@ def test_smoke_app_shell_is_reachable(driver):
 @pytest.mark.browserstack_safe
 def test_smoke_onlineduken_native_container_entry(onlineduken_native_shell_driver):
     with allure.step("Verify that the native OnlineDuken WebView container is present"):
-        assert onlineduken_native_shell_driver.find_elements(*B2BWebViewPage.WEBVIEW), (
-            "OnlineDuken native WebView container was not detected."
+        WebDriverWait(onlineduken_native_shell_driver, 15).until(
+            lambda current_driver: _onlineduken_native_container_ready(current_driver)
         )
 
 

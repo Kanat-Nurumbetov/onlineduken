@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from urllib.parse import urlparse, urlunparse
-
 from appium import webdriver
+from appium.webdriver.client_config import AppiumClientConfig
 from appium.options.android import UiAutomator2Options
 from appium.options.common.base import AppiumOptions
 from appium.options.ios import XCUITestOptions
@@ -21,10 +20,13 @@ def _browserstack_common_caps(settings: Settings, session_name: str) -> dict:
     }
 
 
-def _browserstack_remote_url(settings: Settings) -> str:
-    parsed = urlparse(settings.browserstack_hub_url)
-    netloc = f"{settings.browserstack_username}:{settings.browserstack_access_key}@{parsed.netloc}"
-    return urlunparse(parsed._replace(netloc=netloc))
+def _browserstack_client_config(settings: Settings) -> AppiumClientConfig:
+    return AppiumClientConfig(
+        remote_server_addr=settings.browserstack_hub_url,
+        username=settings.browserstack_username,
+        password=settings.browserstack_access_key,
+        timeout=300,
+    )
 
 
 def _android_local_options(settings: Settings) -> UiAutomator2Options:
@@ -58,8 +60,6 @@ def _android_browserstack_options(settings: Settings, session_name: str) -> UiAu
     options = UiAutomator2Options()
     options.platform_name = "Android"
     options.automation_name = "UiAutomator2"
-    options.set_capability("userName", settings.browserstack_username)
-    options.set_capability("accessKey", settings.browserstack_access_key)
     options.set_capability("appium:app", settings.browserstack_app_android)
     options.set_capability("appium:autoGrantPermissions", True)
     options.set_capability("appium:newCommandTimeout", 240)
@@ -67,6 +67,8 @@ def _android_browserstack_options(settings: Settings, session_name: str) -> UiAu
         **_browserstack_common_caps(settings, session_name),
         "deviceName": settings.browserstack_android_device,
         "platformVersion": settings.browserstack_android_os_version,
+        "appiumLogs": True,
+        "deviceLogs": True,
     })
     return options
 
@@ -95,14 +97,15 @@ def _ios_browserstack_options(settings: Settings, session_name: str) -> XCUITest
     options = XCUITestOptions()
     options.platform_name = "iOS"
     options.automation_name = "XCUITest"
-    options.set_capability("userName", settings.browserstack_username)
-    options.set_capability("accessKey", settings.browserstack_access_key)
     options.set_capability("appium:app", settings.browserstack_app_ios)
     options.set_capability("appium:newCommandTimeout", 240)
     options.set_capability("bstack:options", {
         **_browserstack_common_caps(settings, session_name),
         "deviceName": settings.browserstack_ios_device,
         "platformVersion": settings.browserstack_ios_os_version,
+        "appiumLogs": True,
+        "deviceLogs": True,
+        "autoAcceptAlerts": True,
     })
     return options
 
@@ -110,13 +113,21 @@ def _ios_browserstack_options(settings: Settings, session_name: str) -> XCUITest
 def build_driver(settings: Settings, session_name: str = "OnlineDuken session") -> webdriver.Remote:
     if settings.is_android and settings.is_browserstack:
         options: AppiumOptions = _android_browserstack_options(settings, session_name)
-        driver = webdriver.Remote(command_executor=_browserstack_remote_url(settings), options=options)
+        driver = webdriver.Remote(
+            command_executor=settings.browserstack_hub_url,
+            options=options,
+            client_config=_browserstack_client_config(settings),
+        )
     elif settings.is_android:
         options = _android_local_options(settings)
         driver = webdriver.Remote(command_executor=settings.appium_server_url, options=options)
     elif settings.is_ios and settings.is_browserstack:
         options = _ios_browserstack_options(settings, session_name)
-        driver = webdriver.Remote(command_executor=_browserstack_remote_url(settings), options=options)
+        driver = webdriver.Remote(
+            command_executor=settings.browserstack_hub_url,
+            options=options,
+            client_config=_browserstack_client_config(settings),
+        )
     else:
         options = _ios_local_options(settings)
         driver = webdriver.Remote(command_executor=settings.appium_server_url, options=options)

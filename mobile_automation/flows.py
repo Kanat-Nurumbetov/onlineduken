@@ -18,6 +18,12 @@ KNOWN_STORE_MARKERS = (
     "QQQQQ",
     "0455b1fd-7001-4417-ac6c-f3897d98bce8",
 )
+AUTH_RETRY_DIALOG_MARKERS = (
+    "Истек код",
+    "Повторите запрос",
+    "expired",
+    "authorization",
+)
 
 
 def wait_for(driver, locator: tuple[str, str], timeout: int = 30):
@@ -39,6 +45,28 @@ def get_pin_value(driver) -> str:
     if not fields:
         return ""
     return (fields[0].get_attribute("text") or fields[0].text or "").strip()
+
+
+def fill_text_input(driver, locator: tuple[str, str], value: str) -> bool:
+    elements = driver.find_elements(*locator)
+    if not elements:
+        return False
+    field = elements[0]
+    field.click()
+    try:
+        field.clear()
+    except Exception:
+        pass
+    field.send_keys(value)
+    return True
+
+
+def is_sms_confirmation_screen(driver) -> bool:
+    return bool(driver.find_elements(*SmsCodePage.SUBTITLE) or driver.find_elements(*SmsCodePage.TIMER))
+
+
+def is_passcode_screen(driver) -> bool:
+    return bool(driver.find_elements(*PasscodePage.INPUT)) and not is_sms_confirmation_screen(driver)
 
 
 def fill_pin_with_virtual_keyboard(driver, pin: str) -> None:
@@ -207,31 +235,80 @@ def wait_until_auth_flow_finishes(driver, timeout: int = 20) -> bool:
     return False
 
 
+def dismiss_auth_retry_dialog_if_present(driver) -> bool:
+    messages = driver.find_elements(By.ID, "android:id/message")
+    if not messages:
+        return False
+    message = (messages[0].get_attribute("text") or messages[0].text or "").strip()
+    normalized_message = message.lower()
+    if not any(marker.lower() in normalized_message for marker in AUTH_RETRY_DIALOG_MARKERS):
+        return False
+
+    buttons = driver.find_elements(By.ID, "android:id/button1")
+    if buttons:
+        buttons[0].click()
+    else:
+        driver.press_keycode(4)
+    time.sleep(1.5)
+    return True
+
+
 def try_complete_login(driver, settings: Settings) -> None:
-    if driver.find_elements(*LoginPage.PHONE_INPUT):
-        phone_input = driver.find_element(*LoginPage.PHONE_INPUT)
-        phone_input.click()
-        phone_input.clear()
-        phone_input.send_keys(settings.phone_number)
-        driver.find_element(*LoginPage.LOGIN_BUTTON).click()
-        time.sleep(2)
+    last_retry_reason = ""
+    for attempt_index in range(3):
+        if dismiss_auth_retry_dialog_if_present(driver):
+            last_retry_reason = "auth retry dialog was visible before login attempt"
 
-    if wait_for_any(driver, [SmsCodePage.CODE_INPUT, PasscodePage.INPUT], timeout=15) == SmsCodePage.CODE_INPUT:
-        code_input = driver.find_element(*SmsCodePage.CODE_INPUT)
-        code_input.click()
-        code_input.send_keys(settings.sms_code)
-        time.sleep(2)
+        if driver.find_elements(*LoginPage.PHONE_INPUT):
+            phone_input = driver.find_element(*LoginPage.PHONE_INPUT)
+            phone_input.click()
+            phone_input.clear()
+            phone_input.send_keys(settings.phone_number)
+            driver.find_element(*LoginPage.LOGIN_BUTTON).click()
+            time.sleep(2)
 
-    for _ in range(3):
-        if not driver.find_elements(*PasscodePage.INPUT):
-            break
-        fill_pin_with_virtual_keyboard(driver, settings.pin_code)
-        time.sleep(2)
+        wait_for_any(driver, [SmsCodePage.CODE_INPUT, PasscodePage.INPUT], timeout=15)
 
-    if not wait_until_auth_flow_finishes(driver, timeout=20):
-        capture_native_debug_state(driver, "stuck_on_auth_after_login_attempt")
-        raise TimeoutException("Login flow did not leave AuthActivity. Debug artifacts saved to artifacts/stuck_on_auth_after_login_attempt.*")
-    dismiss_post_login_prompts(driver)
+        if is_sms_confirmation_screen(driver):
+            fill_text_input(driver, SmsCodePage.CODE_INPUT, settings.sms_code)
+            time.sleep(3)
+
+        if dismiss_auth_retry_dialog_if_present(driver):
+            last_retry_reason = "auth code expired after sms entry"
+            time.sleep(10 * (attempt_index + 1))
+            continue
+
+        for _ in range(3):
+            if not is_passcode_screen(driver):
+                break
+            try:
+                fill_pin_with_virtual_keyboard(driver, settings.pin_code)
+            except TimeoutException:
+                if not fill_text_input(driver, SmsCodePage.CODE_INPUT, settings.pin_code):
+                    raise
+            time.sleep(2)
+
+        if wait_until_auth_flow_finishes(driver, timeout=20):
+            dismiss_post_login_prompts(driver)
+            return
+
+        if dismiss_auth_retry_dialog_if_present(driver):
+            last_retry_reason = "auth code expired while waiting for auth flow to finish"
+            time.sleep(10 * (attempt_index + 1))
+            continue
+
+        if driver.find_elements(*LoginPage.PHONE_INPUT):
+            last_retry_reason = "login screen was still visible after auth attempt"
+            time.sleep(5 * (attempt_index + 1))
+            continue
+        break
+
+    capture_native_debug_state(driver, "stuck_on_auth_after_login_attempt")
+    raise TimeoutException(
+        "Login flow did not leave AuthActivity. "
+        f"Last retry reason: {last_retry_reason or 'unknown'}. "
+        "Debug artifacts saved to artifacts/stuck_on_auth_after_login_attempt.*"
+    )
 
 
 def wait_for_main_home(driver, timeout: int = 30, raise_on_timeout: bool = True) -> bool:
@@ -334,6 +411,27 @@ def open_onlineduken_from_main(driver) -> None:
     raise TimeoutException("OnlineDuken entry point was not found on the main screen.")
 
 
+def _app_webview_contexts(driver, settings: Settings) -> list[str]:
+    package_name = (settings.android_app_package or "").lower()
+    matched_contexts: list[str] = []
+    for context in getattr(driver, "contexts", []):
+        normalized_context = context.lower()
+        if "webview" not in normalized_context:
+            continue
+        if package_name and package_name in normalized_context:
+            matched_contexts.append(context)
+            continue
+        if "halyk" in normalized_context or "onlinebank" in normalized_context:
+            matched_contexts.append(context)
+    return matched_contexts
+
+
+def has_target_b2b_webview(driver, settings: Settings) -> bool:
+    if driver.find_elements(*B2BWebViewPage.WEBVIEW):
+        return True
+    return bool(_app_webview_contexts(driver, settings))
+
+
 def unlock_if_needed(driver, settings: Settings) -> None:
     if driver.find_elements(By.ID, "kz.halyk.onlinebank.stage:id/pinEditText") and get_pin_value(driver) != settings.pin_code:
         fill_pin_with_virtual_keyboard(driver, settings.pin_code)
@@ -345,9 +443,7 @@ def wait_for_post_deeplink_ready_state(driver, settings: Settings, timeout: int 
     previous_state: tuple[str, str, bool, bool, bool] | None = None
 
     while time.time() < end:
-        if driver.find_elements(*B2BWebViewPage.WEBVIEW):
-            return "webview"
-        if any("WEBVIEW" in context.upper() for context in driver.contexts):
+        if has_target_b2b_webview(driver, settings):
             return "webview"
         if driver.find_elements(*MainPromptPage.NEXT_BUTTON):
             driver.find_element(*MainPromptPage.NEXT_BUTTON).click()
@@ -449,10 +545,20 @@ def capture_web_debug_state(driver, prefix: str) -> None:
         meta_file.write(f"source_path={source_path}\n")
 
 
-def switch_to_webview(driver, timeout: int = 30) -> str:
+def switch_to_webview(driver, timeout: int = 30, settings: Settings | None = None) -> str:
     end = time.time() + timeout
     while time.time() < end:
+        prioritized_contexts = []
+        if settings is not None:
+            prioritized_contexts.extend(_app_webview_contexts(driver, settings))
+
+        seen_contexts = set(prioritized_contexts)
         for context in driver.contexts:
+            if context in seen_contexts:
+                continue
+            prioritized_contexts.append(context)
+
+        for context in prioritized_contexts:
             if "WEBVIEW" in context.upper():
                 driver.switch_to.context(context)
                 return context
@@ -465,11 +571,11 @@ def switch_to_native(driver) -> None:
     driver.switch_to.context("NATIVE_APP")
 
 
-def ensure_webview_context(driver, timeout: int = 15) -> None:
+def ensure_webview_context(driver, timeout: int = 15, settings: Settings | None = None) -> None:
     current_context = getattr(driver, "current_context", "")
     if "WEBVIEW" in current_context.upper():
         return
-    switch_to_webview(driver, timeout=timeout)
+    switch_to_webview(driver, timeout=timeout, settings=settings)
 
 
 def wait_for_web_overlay_to_clear(driver, timeout: int = 10) -> bool:
@@ -691,8 +797,8 @@ def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, 
                     break
 
             try:
-                if driver.find_elements(*B2BWebViewPage.WEBVIEW) or any("WEBVIEW" in context.upper() for context in driver.contexts):
-                    switch_to_webview(driver, timeout=15)
+                if has_target_b2b_webview(driver, settings):
+                    switch_to_webview(driver, timeout=15, settings=settings)
                     open_onlineduken_home(driver)
                     return
             except Exception as exc:
@@ -740,9 +846,12 @@ def apply_b2b_auth_url_in_webview(driver, settings: Settings) -> bool:
 def enter_onlineduken(driver, settings: Settings, switch_to_webview_context: bool = True) -> None:
     if settings.onlineduken_entry_mode == "token":
         ready_state = "timeout"
-        entry_strategies = [lambda current_driver: open_b2b_auth_url(current_driver, settings)]
-        if settings.b2b_deeplink:
-            entry_strategies.append(lambda current_driver: open_b2b_deeplink(current_driver, settings))
+        if settings.resolved_b2b_auth_url:
+            entry_strategies = [lambda current_driver: open_b2b_auth_url(current_driver, settings)]
+            if settings.b2b_deeplink:
+                entry_strategies.append(lambda current_driver: open_b2b_deeplink(current_driver, settings))
+        else:
+            entry_strategies = []
 
         for open_strategy in entry_strategies:
             try:
@@ -756,19 +865,45 @@ def enter_onlineduken(driver, settings: Settings, switch_to_webview_context: boo
                 break
             time.sleep(2)
 
-        if ready_state != "webview" and is_auth_flow_visible(driver):
-            try_complete_login(driver, settings)
-            wait_for_main_home(driver, timeout=max(settings.explicit_wait_sec, 30), raise_on_timeout=False)
-            open_b2b_deeplink(driver, settings)
-            time.sleep(3)
-            unlock_if_needed(driver, settings)
-            ready_state = wait_for_post_deeplink_ready_state(driver, settings, timeout=max(settings.explicit_wait_sec, 45))
+        if ready_state != "webview":
+            if is_auth_flow_visible(driver):
+                try_complete_login(driver, settings)
 
-        if not driver.find_elements(*B2BWebViewPage.WEBVIEW):
+            native_home_ready = wait_for_main_home(
+                driver,
+                timeout=max(settings.explicit_wait_sec, 30),
+                raise_on_timeout=False,
+            )
+            if native_home_ready:
+                ensure_expected_contract_selected(driver, settings)
+
+            for open_strategy in (
+                open_onlineduken_from_main if native_home_ready else None,
+                (lambda current_driver: open_b2b_deeplink(current_driver, settings)) if settings.b2b_deeplink else None,
+            ):
+                if open_strategy is None:
+                    continue
+                try:
+                    open_strategy(driver)
+                except (TimeoutException, RuntimeError, WebDriverException):
+                    continue
+                time.sleep(3)
+                unlock_if_needed(driver, settings)
+                ready_state = wait_for_post_deeplink_ready_state(
+                    driver,
+                    settings,
+                    timeout=max(settings.explicit_wait_sec, 45),
+                )
+                if ready_state == "webview":
+                    break
+                dismiss_post_login_prompts(driver, timeout=5)
+                time.sleep(2)
+
+        if not has_target_b2b_webview(driver, settings):
             capture_native_debug_state(driver, f"missing_b2b_webview_container_{ready_state}")
         if not switch_to_webview_context:
             return
-        switch_to_webview(driver, timeout=settings.explicit_wait_sec)
+        switch_to_webview(driver, timeout=settings.explicit_wait_sec, settings=settings)
         if settings.resolved_b2b_auth_url:
             apply_b2b_auth_url_in_webview(driver, settings)
         choose_first_store_in_webview_if_present(driver)
@@ -797,9 +932,9 @@ def enter_onlineduken(driver, settings: Settings, switch_to_webview_context: boo
         dismiss_post_login_prompts(driver, timeout=5)
         time.sleep(2)
 
-    if not driver.find_elements(*B2BWebViewPage.WEBVIEW):
+    if not has_target_b2b_webview(driver, settings):
         capture_native_debug_state(driver, f"missing_b2b_webview_container_{ready_state}")
     if not switch_to_webview_context:
         return
-    switch_to_webview(driver, timeout=settings.explicit_wait_sec)
+    switch_to_webview(driver, timeout=settings.explicit_wait_sec, settings=settings)
     choose_first_store_in_webview_if_present(driver)

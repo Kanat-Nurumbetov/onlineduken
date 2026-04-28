@@ -44,6 +44,20 @@ def normalize_b2b_auth_url(raw_url: str = "", raw_token: str = "") -> str:
     return urlunparse(parsed._replace(query=urlencode(query)))
 
 
+def is_valid_b2b_auth_url(raw_url: str) -> bool:
+    if not raw_url:
+        return False
+
+    parsed = urlparse(raw_url)
+    query = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    return (
+        parsed.scheme in {"http", "https"}
+        and bool(parsed.netloc)
+        and "/web/customer-frontend/auth" in parsed.path
+        and bool(query.get("ob-auth-token"))
+    )
+
+
 class LocalAndroidDevice(NamedTuple):
     udid: str
     appium_server_url: str
@@ -120,9 +134,15 @@ class Settings:
     browserstack_android_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_ANDROID_OS_VERSION", "14.0"))
     browserstack_ios_device: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_DEVICE", "iPhone 15"))
     browserstack_ios_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_OS_VERSION", "17"))
+    browserstack_web_driver_mode: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_DRIVER_MODE", "mobile").lower())
+    browserstack_web_os: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_OS", "Windows"))
+    browserstack_web_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_OS_VERSION", "11"))
+    browserstack_web_browser: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_BROWSER", "Chrome"))
+    browserstack_web_browser_version: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_BROWSER_VERSION", "latest"))
     browserstack_project_name: str = field(default_factory=lambda: _env("BROWSERSTACK_PROJECT_NAME", "B2B Mobile Demo"))
     browserstack_build_name: str = field(default_factory=lambda: _env("BROWSERSTACK_BUILD_NAME", "local-dev"))
     browserstack_webview_enabled: bool = field(default_factory=lambda: _bool_env("BROWSERSTACK_WEBVIEW_ENABLED", False))
+    browserstack_login_stagger_sec: int = field(default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "20")))
     web_browser: str = field(default_factory=lambda: _env("WEB_BROWSER", "chrome").lower())
     web_headless: bool = field(default_factory=lambda: _bool_env("WEB_HEADLESS", False))
     web_base_url: str = field(

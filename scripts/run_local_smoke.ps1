@@ -131,7 +131,8 @@ function Invoke-ExternalCapture([string]$FilePath, [string[]]$Arguments = @(), [
 function Ensure-PythonDependencies([hashtable]$PythonCommand) {
     Write-Step "Ensuring Python dependencies"
     Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "--upgrade", "pip")) -IgnoreExitCode
-    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-e", $ProjectRoot))
+    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-r", (Join-Path $ProjectRoot "requirements-ci.txt")))
+    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-e", $ProjectRoot, "--no-deps"))
 }
 
 function Resolve-AppiumCli {
@@ -365,6 +366,14 @@ if ($Workers -gt 1) {
     $pytestArgs += @("-n", "$Workers")
 }
 if ($Allure) {
+    $allurePath = if ([System.IO.Path]::IsPathRooted($AllureResultsDir)) {
+        $AllureResultsDir
+    } else {
+        Join-Path $ProjectRoot $AllureResultsDir
+    }
+    if ((Test-Path $allurePath) -and ((Resolve-Path $allurePath).Path.StartsWith($ProjectRoot))) {
+        Remove-Item -LiteralPath $allurePath -Recurse -Force
+    }
     $pytestArgs += @("--alluredir", $AllureResultsDir)
 }
 if ($SafeSmoke) {
