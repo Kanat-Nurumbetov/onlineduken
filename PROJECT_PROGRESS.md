@@ -691,6 +691,32 @@ Update this file after:
   - fully simultaneous logins with the same test phone can invalidate/expire the OTP flow in another worker
   - the framework now staggers BrowserStack full-login starts with `BROWSERSTACK_LOGIN_STAGGER_SEC`
   - if the smoke set grows beyond two safe tests, the best long-term improvement is a pool of independent test users, one per worker
+
+## Update On 2026-05-04 (BrowserStack QR And WebView UI Smoke Green)
+
+- BrowserStack QR smoke was enabled and validated for both configured QR templates:
+  - `common`
+  - `megapolis`
+- The QR flow now works in BrowserStack through:
+  - generated QR PNG assets
+  - Appium `push_file` into `/sdcard/Pictures`
+  - Android media scan where available
+  - native Android Photo Picker selection
+- BrowserStack Android Photo Picker locators were updated for:
+  - package `com.google.android.providers.media.module`
+  - clickable `Photo taken...` grid items
+- Main BrowserStack-safe smoke result:
+  - build name: `smoke-browserstack-main-qr-ui-20260504`
+  - build id: `2e3a2b470f344595f0aacc49844cdf915f33eee1`
+  - result: `4 passed`
+  - tests: app shell, OnlineDuken native container, QR common, QR megapolis
+- BrowserStack WebView UI subset was also validated successfully with `BROWSERSTACK_WEBVIEW_ENABLED=true`:
+  - build name: `ui-webview-browserstack-20260504`
+  - build id: `0910889a101cda30abbd0121975074b931da391a`
+  - result: `4 passed`
+  - tests: OnlineDuken entry, catalog, orders, bonuses/history
+- Detailed report:
+  - `BROWSERSTACK_RUN_REPORT_2026-05-04.md`
   - this prevents the main happy-path QR smoke from accidentally reusing an older QR and falling into the business flow for re-signing a pending payment
 - Live verification after the refactor:
   - `test_smoke_onlineduken_entry`

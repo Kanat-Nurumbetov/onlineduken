@@ -16,6 +16,7 @@ build/
 .env.parallel.local
 reports/
 allure-results/
+allure-results-ui/
 allure-report/
 artifacts/
 halyk_start_screen.png

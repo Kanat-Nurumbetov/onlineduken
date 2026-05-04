@@ -175,3 +175,15 @@ If only a few screenshots are needed:
   - BrowserStack build id: `500d123b47e61f7e863d8258c7dbc53199a0529b`
   - BrowserStack result: `2 passed`
   - local `allure-results` now contains only this last run
+
+## Update On 2026-05-04 (BrowserStack QR And UI Smoke)
+
+- `C:\Users\Kanat\Documents\New project\BROWSERSTACK_RUN_REPORT_2026-05-04.md`
+  - consolidated tracked report for successful BrowserStack QR and UI smoke runs
+  - main + QR build id: `2e3a2b470f344595f0aacc49844cdf915f33eee1`
+  - main + QR result: `4 passed`
+  - WebView UI build id: `0910889a101cda30abbd0121975074b931da391a`
+  - WebView UI result: `4 passed`
+- Local ignored Allure result folders from the run:
+  - `allure-results`
+  - `allure-results-ui`

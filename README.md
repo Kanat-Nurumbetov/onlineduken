@@ -51,6 +51,7 @@ Important context files in project root:
 - `INTERNAL_AUTH_SETUP.md`
 - `SMOKE_RUN_REPORT_2026-04-19.md`
 - `BROWSERSTACK_RUN_REPORT_2026-04-27.md`
+- `BROWSERSTACK_RUN_REPORT_2026-05-04.md`
 
 ## Setup
 
@@ -345,6 +346,7 @@ What runs in BrowserStack right now:
 - full native login in every BrowserStack test session
 - native main app home check
 - native entry into the `OnlineDuken` container
+- native QR gallery payment smoke for `common` and `megapolis`
 - parallel execution with `pytest-xdist`, default demo target: `-n 3`
 
 What stays out of BrowserStack smoke for now:

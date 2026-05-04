@@ -48,8 +48,6 @@ def _run_adb(settings: Settings, *args: str) -> subprocess.CompletedProcess:
 
 
 def push_qr_image_to_local_device(settings: Settings, image_path: str) -> str:
-    if settings.is_browserstack:
-        raise RuntimeError("Local QR push via adb is not available for BrowserStack sessions yet.")
     if not image_path:
         raise RuntimeError("QR image path is empty.")
 
@@ -74,8 +72,73 @@ def push_qr_image_to_local_device(settings: Settings, image_path: str) -> str:
     return target_path
 
 
+def push_qr_image_to_browserstack_device(driver, image_path: str) -> str:
+    if not image_path:
+        raise RuntimeError("QR image path is empty.")
+
+    source_path = Path(image_path)
+    if not source_path.exists():
+        raise RuntimeError(f"QR image does not exist: {source_path}")
+
+    target_name = f"codex_{source_path.stem}.png"
+    target_path = f"/sdcard/Pictures/{target_name}"
+    driver.push_file(target_path, source_path=str(source_path))
+    try:
+        driver.execute_script(
+            "mobile: shell",
+            {
+                "command": "am",
+                "args": [
+                    "broadcast",
+                    "-a",
+                    "android.intent.action.MEDIA_SCANNER_SCAN_FILE",
+                    "-d",
+                    f"file://{target_path}",
+                ],
+                "timeout": 30000,
+            },
+        )
+    except Exception:
+        # BrowserStack documents Appium push_file as supported. Media scanner availability can vary;
+        # the photo picker often sees pushed Pictures files even when shell is restricted.
+        pass
+    return target_path
+
+
+def push_qr_image_to_device(driver, settings: Settings, image_path: str) -> str:
+    if settings.is_browserstack:
+        return push_qr_image_to_browserstack_device(driver, image_path)
+    return push_qr_image_to_local_device(settings, image_path)
+
+
 def _wait_for_native_presence(driver, locator: tuple[str, str], timeout: int = 30):
     return WebDriverWait(driver, timeout).until(ec.presence_of_element_located(locator))
+
+
+def _click_element_center(driver, element) -> None:
+    rect = element.rect
+    x = int(rect["x"] + rect["width"] / 2)
+    y = int(rect["y"] + rect["height"] / 2)
+    try:
+        driver.execute_script("mobile: clickGesture", {"x": x, "y": y})
+    except Exception:
+        element.click()
+
+
+def accept_android_permission_if_present(driver) -> bool:
+    allow_locators = (
+        ("id", "com.android.permissioncontroller:id/permission_allow_foreground_only_button"),
+        ("id", "com.android.permissioncontroller:id/permission_allow_button"),
+        ("xpath", "//*[@text='While using the app' or @text='Allow' or @text='Разрешить']"),
+    )
+    for by, value in allow_locators:
+        elements = driver.find_elements(by, value)
+        if not elements:
+            continue
+        elements[0].click()
+        time.sleep(1)
+        return True
+    return False
 
 
 def _extract_toast_message(page_source: str) -> str:
@@ -123,8 +186,32 @@ def _is_payment_confirmation_screen(page_source: str) -> bool:
 
 
 def open_qr_scanner(driver) -> None:
-    _wait_for_native_presence(driver, OnlineDukenNativeHomePage.QR_TAB, timeout=30).click()
-    _wait_for_native_presence(driver, QrScannerPage.GALLERY_BUTTON, timeout=30)
+    last_error: Exception | None = None
+    for attempt_index in range(3):
+        qr_tab = _wait_for_native_presence(driver, OnlineDukenNativeHomePage.QR_TAB, timeout=30)
+        try:
+            qr_tab.click()
+        except Exception:
+            _click_element_center(driver, qr_tab)
+        time.sleep(2)
+        accept_android_permission_if_present(driver)
+        try:
+            _wait_for_native_presence(driver, QrScannerPage.GALLERY_BUTTON, timeout=15)
+            return
+        except TimeoutException as exc:
+            last_error = exc
+            try:
+                _click_element_center(driver, qr_tab)
+            except Exception:
+                pass
+            time.sleep(2)
+            accept_android_permission_if_present(driver)
+            if driver.find_elements(*QrScannerPage.GALLERY_BUTTON):
+                return
+    capture_native_debug_state(driver, "qr_scanner_gallery_button_not_found")
+    if last_error:
+        raise last_error
+    raise TimeoutException("QR scanner gallery button was not found.")
 
 
 def prepare_qr_entry(driver, settings: Settings, qr_case: GeneratedQrCase):
@@ -178,10 +265,10 @@ def select_first_photo(driver) -> None:
     for locator in (PhotoPickerPage.FIRST_PHOTO, PhotoPickerPage.FIRST_GRID_ITEM):
         elements = driver.find_elements(*locator)
         if elements:
-            elements[0].click()
+            _click_element_center(driver, elements[0])
             return
         try:
-            _wait_for_native_presence(driver, locator, timeout=10).click()
+            _click_element_center(driver, _wait_for_native_presence(driver, locator, timeout=10))
             return
         except TimeoutException:
             continue
@@ -231,7 +318,7 @@ def submit_qr_payment(driver, timeout: int = 15) -> str:
 
 def run_qr_gallery_payment_flow(driver, settings: Settings, qr_case: GeneratedQrCase) -> str:
     with allure.step(f"Push generated QR image to device for case '{qr_case.name}'"):
-        push_qr_image_to_local_device(settings, qr_case.image_path)
+        push_qr_image_to_device(driver, settings, qr_case.image_path)
     with allure.step("Prepare OnlineDuken native home for QR flow"):
         active_driver = prepare_qr_entry(driver, settings, qr_case) or driver
     with allure.step("Open QR scanner"):

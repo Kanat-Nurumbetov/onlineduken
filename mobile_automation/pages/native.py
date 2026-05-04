@@ -59,13 +59,18 @@ class QrScannerPage:
 
 
 class PhotoPickerPage:
-    ROOT = (By.XPATH, "//*[contains(@package, 'photopicker') or contains(@package, 'picker')]")
+    ROOT = (
+        By.XPATH,
+        "//*[contains(@package, 'photopicker') or contains(@package, 'picker') "
+        "or contains(@package, 'providers.media.module') "
+        "or @resource-id='com.google.android.providers.media.module:id/picker_tab_recyclerview']",
+    )
     DISMISS_BUTTON = (By.XPATH, "//*[contains(@text, 'Dismiss')]")
     FIRST_PHOTO = (
         By.XPATH,
-        "//android.view.View[contains(@content-desc, 'Photo taken')]/ancestor::android.view.View[@clickable='true'][1]",
+        "(//*[contains(@content-desc, 'Photo taken') and @clickable='true'])[1]",
     )
-    FIRST_GRID_ITEM = (By.XPATH, "(//android.view.View[@clickable='true' and @long-clickable='true'])[1]")
+    FIRST_GRID_ITEM = (By.XPATH, "(//*[@clickable='true' and @long-clickable='true'])[1]")
 
 
 class NativePaymentPage:
