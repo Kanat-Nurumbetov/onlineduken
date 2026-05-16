@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from mobile_automation import js as js_snippets
 from mobile_automation.flows import (
     click_web_element,
     ensure_expected_contract_selected,
@@ -26,6 +27,7 @@ from mobile_automation.pages.web import (
     PaymentPage,
 )
 from mobile_automation.qr_flow import run_qr_gallery_payment_flow
+from mobile_automation.text_utils import normalize_text
 
 CART_FLOW_SKIP_REASON = (
     "Cart/order smoke is temporarily skipped until a stable supplier with predictable catalog data "
@@ -44,23 +46,8 @@ def _get_qr_case(generated_qr_cases, case_name: str):
     return None
 
 
-def _maybe_fix_mojibake(text: str) -> str:
-    if not text:
-        return ""
-    try:
-        return text.encode("latin-1").decode("utf-8")
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        return text
-
-
-def _normalize_text(text: str) -> str:
-    return " ".join(_maybe_fix_mojibake(text).split()).strip()
-
-
 def _main_text(driver) -> str:
-    return _normalize_text(
-        driver.execute_script("return ((document.querySelector('#main-content') || document.body).innerText || '').trim();")
-    )
+    return normalize_text(driver.execute_script(js_snippets.load("main_content_text")))
 
 
 def _catalog_route_loaded(driver) -> bool:
@@ -74,19 +61,7 @@ def _click_catalog_tab(driver) -> bool:
         click_web_element(driver, OnlineDukenHomePage.CATALOG_TAB, timeout=15)
         return True
     except TimeoutException:
-        return bool(
-            driver.execute_script(
-                """
-                const link = document.querySelector(
-                  'a[href="/web/customer-frontend/distributors"], a[href="/web/customer-frontend/distributor"]'
-                );
-                if (!link) return false;
-                link.scrollIntoView({block: 'center'});
-                link.click();
-                return true;
-                """
-            )
-        )
+        return bool(driver.execute_script(js_snippets.load("click_catalog_anchor")))
 
 
 def _open_catalog(driver) -> None:
@@ -117,29 +92,7 @@ def _catalog_page_is_ready(driver) -> bool:
 
 
 def _click_first_visible_button_by_text(driver, button_text: str) -> bool:
-    return bool(
-        driver.execute_script(
-            """
-            const targetText = arguments[0].trim().toLowerCase();
-            const root = document.querySelector('#main-content') || document.body;
-            const isVisible = (el) => {
-              const style = window.getComputedStyle(el);
-              const rect = el.getBoundingClientRect();
-              return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-            };
-            const buttons = Array.from(root.querySelectorAll('button, a, [role="button"]')).filter(isVisible);
-            for (const button of buttons) {
-              const text = (button.innerText || button.textContent || '').trim().replace(/\\s+/g, ' ').toLowerCase();
-              if (!text || text !== targetText) continue;
-              button.scrollIntoView({block: 'center'});
-              button.click();
-              return true;
-            }
-            return false;
-            """,
-            button_text,
-        )
-    )
+    return bool(driver.execute_script(js_snippets.load("click_visible_button_by_text"), button_text))
 
 
 def _click_first_matching_element(driver, locator: tuple[str, str]) -> bool:
@@ -189,50 +142,7 @@ def _resolve_quantity_popup_if_present(driver) -> bool:
 
 
 def _click_first_catalog_content(driver) -> bool:
-    return bool(
-        driver.execute_script(
-            """
-            const root = document.querySelector('#main-content') || document.body;
-            const banned = [
-              'главная', 'каталог', 'qr', 'корзина', 'еще', 'назад', 'закрыть',
-              'подключиться', 'подробнее', 'мои заказы', 'бонусы', 'оплатить поставщику',
-              'создать заказ', 'в корзину', 'найти поставщика', 'перейти в заказы'
-            ];
-            const isVisible = (el) => {
-              const style = window.getComputedStyle(el);
-              const rect = el.getBoundingClientRect();
-              return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-            };
-            const selectors = [
-              '[class*="category"]',
-              '[class*="subcategory"]',
-              '[class*="product"]',
-              '[class*="item"]',
-              '[class*="card"]',
-              '[routerlink]',
-              'article',
-              'section'
-            ];
-            const seen = new Set();
-            const candidates = [];
-            for (const selector of selectors) {
-              for (const el of root.querySelectorAll(selector)) {
-                if (seen.has(el) || !isVisible(el)) continue;
-                seen.add(el);
-                const text = (el.innerText || el.textContent || '').trim().replace(/\\s+/g, ' ').toLowerCase();
-                if (!text || banned.some((token) => text.includes(token))) continue;
-                candidates.push(el);
-              }
-            }
-            for (const candidate of candidates) {
-              candidate.scrollIntoView({block: 'center'});
-              candidate.click();
-              return true;
-            }
-            return false;
-            """
-        )
-    )
+    return bool(driver.execute_script(js_snippets.load("click_first_catalog_content")))
 
 
 def _add_product_to_cart_from_catalog(driver, max_depth: int = 8) -> bool:
@@ -259,15 +169,7 @@ def _open_cart(driver) -> None:
     try:
         click_web_element(driver, OnlineDukenHomePage.CART_TAB, timeout=15)
     except TimeoutException:
-        opened = driver.execute_script(
-            """
-            const link = document.querySelector('a[href="/web/customer-frontend/cart"]');
-            if (!link) return false;
-            link.scrollIntoView({block: 'center'});
-            link.click();
-            return true;
-            """
-        )
+        opened = driver.execute_script(js_snippets.load("click_cart_anchor"))
         if not opened:
             open_onlineduken_route(driver, "cart")
 

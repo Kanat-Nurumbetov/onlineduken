@@ -7,6 +7,8 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from mobile_automation import js as js_snippets
+
 
 def open_authenticated_onlineduken(driver: WebDriver, auth_url: str, timeout: int = 30) -> None:
     driver.get(auth_url)
@@ -46,48 +48,17 @@ def click_element(driver: WebDriver, locator: tuple[str, str], timeout: int = 30
 
 
 def main_text(driver: WebDriver) -> str:
-    return (
-        driver.execute_script(
-            "return ((document.querySelector('#main-content') || document.body).innerText || '').trim();"
-        )
-        or ""
-    ).strip()
+    return (driver.execute_script(js_snippets.load("main_content_text")) or "").strip()
 
 
 def choose_first_store_if_present(driver: WebDriver) -> bool:
-    clicked = driver.execute_script(
-        """
-        const overlay = document.querySelector('.bottom-overlay.bottom-overlay_visible');
-        if (!overlay) return '';
-        const candidates = Array.from(
-          overlay.querySelectorAll(
-            '.user-addresses__item, .user-addresses__item-inner, [class*="address"], [class*="store"], [class*="item"]'
-          )
-        );
-        for (const candidate of candidates) {
-          const rect = candidate.getBoundingClientRect();
-          const text = (candidate.innerText || candidate.textContent || '').trim();
-          if (!text || !rect.width || !rect.height) continue;
-          candidate.scrollIntoView({block: 'center'});
-          candidate.click();
-          return text;
-        }
-        return '';
-        """
-    )
+    clicked = driver.execute_script(js_snippets.load("select_store_web_overlay"))
     if not clicked:
         return False
 
     try:
         WebDriverWait(driver, 10).until(
-            lambda current_driver: not current_driver.execute_script(
-                """
-                const overlay = document.querySelector('.bottom-overlay.bottom-overlay_visible');
-                if (!overlay) return false;
-                const style = window.getComputedStyle(overlay);
-                return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-                """
-            )
+            lambda current_driver: not current_driver.execute_script(js_snippets.load("store_overlay_visible"))
         )
     except TimeoutException:
         return False

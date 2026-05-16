@@ -19,8 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from mobile_automation.config import Settings
+from mobile_automation.config import Settings, get_settings
 from mobile_automation.driver_factory import build_driver
+from mobile_automation.driver_registry import register as register_driver, unregister as unregister_driver
 from mobile_automation.flows import enter_onlineduken, recover_onlineduken_home
 from mobile_automation.qr_assets import build_generated_qr_cases, ensure_qr_image
 from mobile_automation.reporting import attach_driver_state, attach_text, allure_enabled, write_allure_environment
@@ -46,7 +47,7 @@ class ManagedDriverSession:
             return False
         try:
             return bool(self._driver.session_id) and bool(self._driver.contexts)
-        except Exception:
+        except WebDriverException:
             return False
 
     def get_driver(self, restart: bool = False):
@@ -56,11 +57,13 @@ class ManagedDriverSession:
 
     def restart(self):
         if self._driver is not None:
-            with suppress(Exception):
+            previous_session_id = getattr(self._driver, "session_id", "")
+            with suppress(WebDriverException):
                 self._driver.quit()
+            unregister_driver(previous_session_id)
         self._restart_count += 1
         self._driver = build_driver(self.settings, session_name=f"{self.session_name} #{self._restart_count}")
-        setattr(self._driver, "_codex_manager", self)
+        register_driver(getattr(self._driver, "session_id", ""), self)
         return self._driver
 
     @property
@@ -69,14 +72,16 @@ class ManagedDriverSession:
 
     def close(self) -> None:
         if self._driver is not None:
-            with suppress(Exception):
+            previous_session_id = getattr(self._driver, "session_id", "")
+            with suppress(WebDriverException):
                 self._driver.quit()
+            unregister_driver(previous_session_id)
             self._driver = None
 
 
 @pytest.fixture(scope="session")
 def settings() -> Settings:
-    return Settings()
+    return get_settings()
 
 
 @pytest.fixture(scope="session")
@@ -113,6 +118,7 @@ def _apply_shared_b2b_auth_url(shared_auth_url: str) -> None:
         return
     os.environ["B2B_AUTH_URL"] = shared_auth_url
     os.environ.pop("B2B_OB_AUTH_TOKEN", None)
+    get_settings.cache_clear()
 
 
 def _apply_local_worker_device(worker_udid: str, worker_appium_url: str) -> None:
@@ -120,6 +126,8 @@ def _apply_local_worker_device(worker_udid: str, worker_appium_url: str) -> None
         os.environ["ANDROID_UDID"] = worker_udid
     if worker_appium_url:
         os.environ["APPIUM_SERVER_URL"] = worker_appium_url
+    if worker_udid or worker_appium_url:
+        get_settings.cache_clear()
 
 
 def _get_allure_results_dir(config: pytest.Config) -> str:
@@ -159,7 +167,7 @@ def pytest_configure(config: pytest.Config) -> None:
         )
         return
 
-    settings = Settings()
+    settings = get_settings()
     if settings.onlineduken_entry_mode != "token" or not settings.b2b_shared_auth_bootstrap:
         return
 
@@ -176,7 +184,7 @@ def pytest_configure_node(node) -> None:
     if shared_auth_url:
         node.workerinput[SHARED_B2B_AUTH_URL] = shared_auth_url
 
-    settings = Settings()
+    settings = get_settings()
     local_devices = settings.resolved_local_android_devices
     if settings.is_browserstack or not local_devices:
         return
@@ -202,7 +210,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if requested_workers <= 1:
         return
 
-    settings = Settings()
+    settings = get_settings()
     if settings.is_browserstack:
         return
 
@@ -219,7 +227,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    settings = Settings()
+    settings = get_settings()
     if not settings.is_browserstack or settings.browserstack_webview_enabled:
         return
 
@@ -279,7 +287,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)
 
-    if Settings().is_browserstack and report.when in {"setup", "call"}:
+    if get_settings().is_browserstack and report.when in {"setup", "call"}:
         if report.failed:
             reason = report.longreprtext if hasattr(report, "longreprtext") else str(report.longrepr)
             for driver in _iter_unique_drivers(item):
@@ -438,18 +446,22 @@ def web_driver(settings: Settings, web_auth_url: str):
             driver.quit()
 
 
+def _module_session_manager(settings: Settings, session_label: str):
+    manager = ManagedDriverSession(settings, session_name=f"OnlineDuken {session_label}")
+    try:
+        yield manager
+    finally:
+        manager.close()
+
+
 @pytest.fixture(scope="module")
 def ui_session_manager(settings: Settings, appium_service):
-    manager = ManagedDriverSession(settings, session_name="OnlineDuken UI smoke")
-    yield manager
-    manager.close()
+    yield from _module_session_manager(settings, "UI smoke")
 
 
 @pytest.fixture(scope="module")
 def payments_session_manager(settings: Settings, appium_service):
-    manager = ManagedDriverSession(settings, session_name="OnlineDuken payments smoke")
-    yield manager
-    manager.close()
+    yield from _module_session_manager(settings, "payments smoke")
 
 
 @pytest.fixture(scope="function")

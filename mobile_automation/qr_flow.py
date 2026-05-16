@@ -1,35 +1,40 @@
 from __future__ import annotations
 
+import logging
+import os
+import shutil
 import subprocess
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import allure
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from mobile_automation.android_ids import app_id
 from mobile_automation.config import GeneratedQrCase, Settings
+from mobile_automation.driver_registry import get_session_manager_for
 from mobile_automation.flows import capture_native_debug_state, enter_onlineduken, recover_onlineduken_home, switch_to_native
 from mobile_automation.pages.native import NativePaymentPage, OnlineDukenNativeHomePage, PhotoPickerPage, QrScannerPage
+from mobile_automation.text_utils import normalize_text
 
-
-def _maybe_fix_mojibake(text: str) -> str:
-    if not text:
-        return ""
-    try:
-        return text.encode("latin-1").decode("utf-8")
-    except (UnicodeEncodeError, UnicodeDecodeError):
-        return text
-
-
-def _normalize_text(text: str) -> str:
-    return " ".join(_maybe_fix_mojibake(text).split()).strip()
+logger = logging.getLogger(__name__)
 
 
 def _adb_path(settings: Settings) -> Path:
-    return Path(settings.android_sdk_root) / "platform-tools" / "adb.exe"
+    adb_name = "adb.exe" if os.name == "nt" else "adb"
+    if settings.android_sdk_root:
+        candidate = Path(settings.android_sdk_root) / "platform-tools" / adb_name
+        if candidate.is_file():
+            return candidate
+    discovered = shutil.which("adb")
+    if discovered:
+        return Path(discovered)
+    raise RuntimeError(
+        "adb executable was not found. Set ANDROID_SDK_ROOT or add adb to PATH."
+    )
 
 
 def _run_adb(settings: Settings, *args: str) -> subprocess.CompletedProcess:
@@ -98,10 +103,10 @@ def push_qr_image_to_browserstack_device(driver, image_path: str) -> str:
                 "timeout": 30000,
             },
         )
-    except Exception:
+    except WebDriverException:
         # BrowserStack documents Appium push_file as supported. Media scanner availability can vary;
         # the photo picker often sees pushed Pictures files even when shell is restricted.
-        pass
+        logger.debug("media scanner broadcast failed on BrowserStack; relying on photo picker fallback", exc_info=True)
     return target_path
 
 
@@ -121,7 +126,8 @@ def _click_element_center(driver, element) -> None:
     y = int(rect["y"] + rect["height"] / 2)
     try:
         driver.execute_script("mobile: clickGesture", {"x": x, "y": y})
-    except Exception:
+    except WebDriverException:
+        logger.debug("mobile: clickGesture failed; falling back to element.click()", exc_info=True)
         element.click()
 
 
@@ -152,7 +158,7 @@ def _extract_toast_message(page_source: str) -> str:
             continue
         texts: list[str] = []
         for child in node.iter():
-            text = _normalize_text(child.attrib.get("text", ""))
+            text = normalize_text(child.attrib.get("text", ""))
             if text.lower() == "close":
                 continue
             if text:
@@ -163,7 +169,7 @@ def _extract_toast_message(page_source: str) -> str:
 
 
 def _is_invalid_bin_toast(message: str) -> bool:
-    normalized = _normalize_text(message).lower()
+    normalized = normalize_text(message).lower()
     return (
         "бин" in normalized
         or "iin/bin" in normalized
@@ -175,10 +181,8 @@ def _is_invalid_bin_toast(message: str) -> bool:
 
 
 def _is_payment_confirmation_screen(page_source: str) -> bool:
-    confirmation_markers = (
-        'resource-id="kz.halyk.onlinebank.stage:id/pinEditText"',
-        'resource-id="kz.halyk.onlinebank.stage:id/et"',
-        'resource-id="kz.halyk.onlinebank.stage:id/sms_subtitle"',
+    confirmation_markers = tuple(
+        f'resource-id="{app_id(short_id)}"' for short_id in ("pinEditText", "et", "sms_subtitle")
     )
     has_confirmation_input = all(marker in page_source for marker in confirmation_markers)
     has_confirmation_title = "РџРѕРґС‚РІРµСЂР¶Рґ" in page_source or "Подтверж" in page_source
@@ -191,7 +195,8 @@ def open_qr_scanner(driver) -> None:
         qr_tab = _wait_for_native_presence(driver, OnlineDukenNativeHomePage.QR_TAB, timeout=30)
         try:
             qr_tab.click()
-        except Exception:
+        except WebDriverException:
+            logger.debug("QR_TAB.click() failed; retrying via center gesture", exc_info=True)
             _click_element_center(driver, qr_tab)
         time.sleep(2)
         accept_android_permission_if_present(driver)
@@ -202,8 +207,8 @@ def open_qr_scanner(driver) -> None:
             last_error = exc
             try:
                 _click_element_center(driver, qr_tab)
-            except Exception:
-                pass
+            except WebDriverException:
+                logger.debug("QR_TAB recovery click failed", exc_info=True)
             time.sleep(2)
             accept_android_permission_if_present(driver)
             if driver.find_elements(*QrScannerPage.GALLERY_BUTTON):
@@ -225,7 +230,8 @@ def prepare_qr_entry(driver, settings: Settings, qr_case: GeneratedQrCase):
         try:
             driver.back()
             time.sleep(1)
-        except Exception:
+        except WebDriverException:
+            logger.debug("driver.back() failed while preparing QR entry", exc_info=True)
             break
         if driver.find_elements(*OnlineDukenNativeHomePage.QR_TAB):
             return driver
@@ -235,8 +241,9 @@ def prepare_qr_entry(driver, settings: Settings, qr_case: GeneratedQrCase):
         switch_to_native(driver)
         if driver.find_elements(*OnlineDukenNativeHomePage.QR_TAB):
             return driver
-    except Exception:
-        manager = getattr(driver, "_codex_manager", None)
+    except (TimeoutException, WebDriverException):
+        logger.warning("enter_onlineduken failed during QR entry preparation; attempting driver restart", exc_info=True)
+        manager = get_session_manager_for(driver)
         if manager is not None:
             restarted_driver = manager.restart()
             recover_onlineduken_home(

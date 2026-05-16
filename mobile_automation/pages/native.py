@@ -2,49 +2,59 @@ from __future__ import annotations
 
 from selenium.webdriver.common.by import By
 
+from mobile_automation.android_ids import app_id
+
+# Note on the mojibake-looking strings (e.g. "РћРїР»Р°С‚"):
+# these are intentional fallbacks for environments where the Halyk stage build
+# renders Cyrillic UI text that has been double-encoded as CP1251 → UTF-8.
+# They match the same words ("Оплат", "Подпис", "Подтверж") in the corrupted
+# byte form so XPath locators stay green regardless of which encoding the
+# emulator surfaces. Don't remove them without verifying both local and
+# BrowserStack builds render Cyrillic correctly.
+
 
 class LoginPage:
-    PHONE_INPUT = (By.ID, "kz.halyk.onlinebank.stage:id/phone_input")
-    LOGIN_BUTTON = (By.ID, "kz.halyk.onlinebank.stage:id/login_button")
-    LANGUAGE = (By.ID, "kz.halyk.onlinebank.stage:id/lang_text_view")
-    BECOME_CUSTOMER = (By.ID, "kz.halyk.onlinebank.stage:id/become_client_button")
+    PHONE_INPUT = (By.ID, app_id("phone_input"))
+    LOGIN_BUTTON = (By.ID, app_id("login_button"))
+    LANGUAGE = (By.ID, app_id("lang_text_view"))
+    BECOME_CUSTOMER = (By.ID, app_id("become_client_button"))
 
 
 class SmsCodePage:
-    SUBTITLE = (By.ID, "kz.halyk.onlinebank.stage:id/sms_subtitle")
-    TIMER = (By.ID, "kz.halyk.onlinebank.stage:id/sms_remaining")
-    CODE_INPUT = (By.ID, "kz.halyk.onlinebank.stage:id/et")
+    SUBTITLE = (By.ID, app_id("sms_subtitle"))
+    TIMER = (By.ID, app_id("sms_remaining"))
+    CODE_INPUT = (By.ID, app_id("et"))
 
 
 class PasscodePage:
-    INPUT = (By.ID, "kz.halyk.onlinebank.stage:id/pinEditText")
-    FORGOT = (By.ID, "kz.halyk.onlinebank.stage:id/text_forgot_pin")
+    INPUT = (By.ID, app_id("pinEditText"))
+    FORGOT = (By.ID, app_id("text_forgot_pin"))
 
 
 class MainHomePage:
-    CONTRACT_SELECTOR = (By.ID, "kz.halyk.onlinebank.stage:id/select_contract_container")
-    CONTRACT_NAME = (By.ID, "kz.halyk.onlinebank.stage:id/contract_name_text_view")
-    CONTRACT_LIST = (By.ID, "kz.halyk.onlinebank.stage:id/rv_contracts")
+    CONTRACT_SELECTOR = (By.ID, app_id("select_contract_container"))
+    CONTRACT_NAME = (By.ID, app_id("contract_name_text_view"))
+    CONTRACT_LIST = (By.ID, app_id("rv_contracts"))
     ONLINE_DUKEN_SHORTCUT = (
         By.XPATH,
-        "//androidx.recyclerview.widget.RecyclerView[@resource-id='kz.halyk.onlinebank.stage:id/shortcut_rv']"
-        "//android.view.ViewGroup[@resource-id='kz.halyk.onlinebank.stage:id/container']"
-        "[.//android.widget.TextView[@resource-id='kz.halyk.onlinebank.stage:id/title' and contains(@text, 'Online')]]",
+        f"//androidx.recyclerview.widget.RecyclerView[@resource-id='{app_id('shortcut_rv')}']"
+        f"//android.view.ViewGroup[@resource-id='{app_id('container')}']"
+        f"[.//android.widget.TextView[@resource-id='{app_id('title')}' and contains(@text, 'Online')]]",
     )
     ONLINE_DUKEN_SECTION = (
         By.XPATH,
-        "//android.widget.TextView[@resource-id='kz.halyk.onlinebank.stage:id/tv_header' and contains(@text, 'Online')]"
+        f"//android.widget.TextView[@resource-id='{app_id('tv_header')}' and contains(@text, 'Online')]"
         "/following-sibling::android.widget.FrameLayout"
-        "//android.view.ViewGroup[@resource-id='kz.halyk.onlinebank.stage:id/products_container']",
+        f"//android.view.ViewGroup[@resource-id='{app_id('products_container')}']",
     )
 
 
 class B2BWebViewPage:
-    WEBVIEW = (By.ID, "kz.halyk.onlinebank.stage:id/webview")
+    WEBVIEW = (By.ID, app_id("webview"))
 
 
 class MainPromptPage:
-    NEXT_BUTTON = (By.ID, "kz.halyk.onlinebank.stage:id/successButtonNext")
+    NEXT_BUTTON = (By.ID, app_id("successButtonNext"))
 
 
 class OnlineDukenNativeHomePage:
@@ -53,9 +63,9 @@ class OnlineDukenNativeHomePage:
 
 class QrScannerPage:
     TITLE = (By.XPATH, "//*[contains(@text, 'QR') or contains(@text, 'Р QR')]")
-    GALLERY_BUTTON = (By.ID, "kz.halyk.onlinebank.stage:id/gallery")
-    FLASHLIGHT_BUTTON = (By.ID, "kz.halyk.onlinebank.stage:id/light")
-    INSTRUCTION_TEXT = (By.ID, "kz.halyk.onlinebank.stage:id/text_view")
+    GALLERY_BUTTON = (By.ID, app_id("gallery"))
+    FLASHLIGHT_BUTTON = (By.ID, app_id("light"))
+    INSTRUCTION_TEXT = (By.ID, app_id("text_view"))
 
 
 class PhotoPickerPage:
@@ -87,4 +97,4 @@ class NativePaymentPage:
 
 class PaymentConfirmationPage:
     TITLE = (By.XPATH, "//*[contains(@text, 'Подтверж') or contains(@text, 'РџРѕРґС‚РІРµСЂР¶')]")
-    CODE_INPUT = (By.ID, "kz.halyk.onlinebank.stage:id/et")
+    CODE_INPUT = (By.ID, app_id("et"))

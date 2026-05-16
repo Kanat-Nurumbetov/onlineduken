@@ -9,33 +9,8 @@ import qrcode
 from mobile_automation.config import GeneratedQrCase, Settings
 
 
-def ensure_qr_image(settings: Settings) -> str:
-    if settings.qr_image_path:
-        return settings.qr_image_path
-
-    qr_content = settings.qr_source_url or settings.qr_source_payload
-    if not qr_content:
-        return ""
-
-    target_path = Path(settings.qr_generated_image_path)
-    target_path.parent.mkdir(parents=True, exist_ok=True)
-
-    qr = qrcode.QRCode(
-        version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=12,
-        border=4,
-    )
-    qr.add_data(qr_content)
-    qr.make(fit=True)
-    image = qr.make_image(fill_color="black", back_color="white")
-    image.save(target_path)
-    return str(target_path)
-
-
 def _build_qr_png(payload: str, target_path: Path) -> str:
     target_path.parent.mkdir(parents=True, exist_ok=True)
-
     qr = qrcode.QRCode(
         version=None,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -47,6 +22,17 @@ def _build_qr_png(payload: str, target_path: Path) -> str:
     image = qr.make_image(fill_color="black", back_color="white")
     image.save(target_path)
     return str(target_path)
+
+
+def ensure_qr_image(settings: Settings) -> str:
+    if settings.qr_image_path:
+        return settings.qr_image_path
+
+    qr_content = settings.qr_source_url or settings.qr_source_payload
+    if not qr_content:
+        return ""
+
+    return _build_qr_png(qr_content, Path(settings.qr_generated_image_path))
 
 
 def _build_unique_numeric_value(base_value: str, unique_seed: str, min_prefix: str = "1") -> str:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -10,8 +11,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from mobile_automation import js as js_snippets
+from mobile_automation.android_ids import APP_PACKAGE, FULL_PROGRESS, PASSCODE_KEYBOARD, PIN_EDIT_TEXT, TOUCH_OUTSIDE
 from mobile_automation.config import Settings
 from mobile_automation.pages.native import B2BWebViewPage, LoginPage, MainHomePage, MainPromptPage, PasscodePage, SmsCodePage
+from mobile_automation.wait_utils import poll_until
+from mobile_automation.web_flows import wait_for_customer_frontend as wait_for_web_customer_frontend  # noqa: F401
+
+logger = logging.getLogger(__name__)
 
 ARTIFACTS_DIR = Path(__file__).resolve().parents[1] / "artifacts"
 KNOWN_STORE_MARKERS = (
@@ -24,6 +31,18 @@ AUTH_RETRY_DIALOG_MARKERS = (
     "expired",
     "authorization",
 )
+
+
+_BOUNDS_RE = re.compile(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]")
+
+
+def _parse_bounds(bounds: str | None) -> tuple[int, int, int, int] | None:
+    if not bounds:
+        return None
+    match = _BOUNDS_RE.match(bounds)
+    if not match:
+        return None
+    return tuple(int(value) for value in match.groups())  # type: ignore[return-value]
 
 
 def wait_for(driver, locator: tuple[str, str], timeout: int = 30):
@@ -55,8 +74,8 @@ def fill_text_input(driver, locator: tuple[str, str], value: str) -> bool:
     field.click()
     try:
         field.clear()
-    except Exception:
-        pass
+    except WebDriverException:
+        logger.debug("clear() failed on %s; relying on send_keys to overwrite", locator, exc_info=True)
     field.send_keys(value)
     return True
 
@@ -83,8 +102,9 @@ def fill_pin_with_virtual_keyboard(driver, pin: str) -> None:
         "0": (1, 3),
     }
     source = driver.page_source
+    keyboard_id_pattern = re.escape(PASSCODE_KEYBOARD)
     bounds_match = re.search(
-        r'resource-id="kz\.halyk\.onlinebank\.stage:id/passcode_fragment_keyboard".*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
+        rf'resource-id="{keyboard_id_pattern}".*?bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',
         source,
         re.DOTALL,
     )
@@ -130,14 +150,12 @@ def click_first_clickable_ancestor_for_text(driver, text_fragment: str) -> bool:
         current = node
         while current is not None:
             if current.attrib.get("clickable") == "true":
-                bounds = current.attrib.get("bounds")
-                if bounds:
-                    match = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds)
-                    if match:
-                        x1, y1, x2, y2 = map(int, match.groups())
-                        driver.execute_script("mobile: clickGesture", {"x": (x1 + x2) // 2, "y": (y1 + y2) // 2})
-                        time.sleep(2)
-                        return True
+                parsed = _parse_bounds(current.attrib.get("bounds"))
+                if parsed:
+                    x1, y1, x2, y2 = parsed
+                    driver.execute_script("mobile: clickGesture", {"x": (x1 + x2) // 2, "y": (y1 + y2) // 2})
+                    time.sleep(2)
+                    return True
             current = parent_map.get(current)
 
     return False
@@ -198,13 +216,10 @@ def choose_first_store_if_present(driver) -> bool:
                 continue
             if child.attrib.get("resource-id") in ignored_ids:
                 continue
-            bounds = child.attrib.get("bounds")
-            if not bounds:
+            parsed = _parse_bounds(child.attrib.get("bounds"))
+            if not parsed:
                 continue
-            match = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", bounds)
-            if not match:
-                continue
-            x1, y1, x2, y2 = map(int, match.groups())
+            x1, y1, x2, y2 = parsed
             clickable_candidates.append(((x1 + x2) // 2, (y1 + y2) // 2))
 
         if clickable_candidates:
@@ -227,12 +242,7 @@ def is_auth_flow_visible(driver) -> bool:
 
 
 def wait_until_auth_flow_finishes(driver, timeout: int = 20) -> bool:
-    end = time.time() + timeout
-    while time.time() < end:
-        if not is_auth_flow_visible(driver):
-            return True
-        time.sleep(1)
-    return False
+    return poll_until(lambda: not is_auth_flow_visible(driver), timeout=timeout, poll=1.0)
 
 
 def dismiss_auth_retry_dialog_if_present(driver) -> bool:
@@ -328,8 +338,8 @@ def wait_for_main_home(driver, timeout: int = 30, raise_on_timeout: bool = True)
 
         current_activity = getattr(driver, "current_activity", "")
         current_package = getattr(driver, "current_package", "")
-        if current_package and current_package != "kz.halyk.onlinebank.stage":
-            driver.activate_app("kz.halyk.onlinebank.stage")
+        if current_package and current_package != APP_PACKAGE:
+            driver.activate_app(APP_PACKAGE)
             time.sleep(3)
             continue
         if current_activity.endswith(".QrActivity"):
@@ -367,8 +377,8 @@ def ensure_expected_contract_selected(driver, settings: Settings) -> bool:
             break
 
     capture_native_debug_state(driver, "contract_suffix_not_found")
-    if driver.find_elements(By.ID, "kz.halyk.onlinebank.stage:id/touch_outside"):
-        driver.find_element(By.ID, "kz.halyk.onlinebank.stage:id/touch_outside").click()
+    if driver.find_elements(By.ID, TOUCH_OUTSIDE):
+        driver.find_element(By.ID, TOUCH_OUTSIDE).click()
         time.sleep(1)
     return False
 
@@ -433,7 +443,7 @@ def has_target_b2b_webview(driver, settings: Settings) -> bool:
 
 
 def unlock_if_needed(driver, settings: Settings) -> None:
-    if driver.find_elements(By.ID, "kz.halyk.onlinebank.stage:id/pinEditText") and get_pin_value(driver) != settings.pin_code:
+    if driver.find_elements(By.ID, PIN_EDIT_TEXT) and get_pin_value(driver) != settings.pin_code:
         fill_pin_with_virtual_keyboard(driver, settings.pin_code)
 
 
@@ -455,7 +465,7 @@ def wait_for_post_deeplink_ready_state(driver, settings: Settings, timeout: int 
             continue
         has_passcode = bool(driver.find_elements(*PasscodePage.INPUT))
         pin_value = get_pin_value(driver)
-        has_progress = bool(driver.find_elements(By.ID, "kz.halyk.onlinebank.stage:id/full_progress"))
+        has_progress = bool(driver.find_elements(By.ID, FULL_PROGRESS))
         has_webview = bool(driver.find_elements(*B2BWebViewPage.WEBVIEW))
         current_state = (getattr(driver, "current_activity", ""), pin_value, has_passcode, has_progress, has_webview)
 
@@ -582,17 +592,11 @@ def wait_for_web_overlay_to_clear(driver, timeout: int = 10) -> bool:
     end = time.time() + timeout
     while time.time() < end:
         try:
-            overlay_present = driver.execute_script(
-                """
-                const overlay = document.querySelector('.bottom-overlay__fade');
-                if (!overlay) return false;
-                const style = window.getComputedStyle(overlay);
-                return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-                """
-            )
+            overlay_present = driver.execute_script(js_snippets.load("overlay_visible"))
             if not overlay_present:
                 return True
-        except Exception:
+        except WebDriverException:
+            logger.debug("overlay JS probe failed; falling back to page_source check", exc_info=True)
             if "bottom-overlay__fade" not in driver.page_source:
                 return True
         time.sleep(0.5)
@@ -609,27 +613,7 @@ def choose_first_store_in_webview_if_present(driver) -> bool:
 
     capture_web_debug_state(driver, "web_store_popup_detected")
 
-    clicked_visible_store = driver.execute_script(
-        """
-        const selectors = [
-          '.bottom-overlay.bottom-overlay_visible .user-addresses__item',
-          '.bottom-overlay.bottom-overlay_visible .user-addresses__item-inner'
-        ];
-        for (const selector of selectors) {
-          const candidates = Array.from(document.querySelectorAll(selector));
-          for (const candidate of candidates) {
-            const rect = candidate.getBoundingClientRect();
-            if (!rect.width || !rect.height) {
-              continue;
-            }
-            candidate.scrollIntoView({block: 'center'});
-            candidate.click();
-            return (candidate.innerText || candidate.textContent || '').trim();
-          }
-        }
-        return '';
-        """
-    )
+    clicked_visible_store = driver.execute_script(js_snippets.load("select_store_in_visible_overlay"))
     if clicked_visible_store:
         wait_for_web_overlay_to_clear(driver, timeout=10)
         return True
@@ -643,31 +627,7 @@ def choose_first_store_in_webview_if_present(driver) -> bool:
         wait_for_web_overlay_to_clear(driver, timeout=10)
         return True
 
-    clicked_text = driver.execute_script(
-        """
-        const skipPattern = /закрыть|close|cancel|отмена/i;
-        const roots = Array.from(
-          document.querySelectorAll('[class*="bottom-overlay"], [class*="store"], [class*="shop"], [class*="branch"]')
-        );
-        for (const root of roots) {
-          const candidates = root.querySelectorAll('button, a, [role="button"], [onclick], .item, .card');
-          for (const candidate of candidates) {
-            const text = (candidate.innerText || candidate.textContent || '').trim();
-            if (!text || skipPattern.test(text)) {
-              continue;
-            }
-            const rect = candidate.getBoundingClientRect();
-            if (!rect.width || !rect.height) {
-              continue;
-            }
-            candidate.scrollIntoView({block: 'center'});
-            candidate.click();
-            return text;
-          }
-        }
-        return '';
-        """
-    )
+    clicked_text = driver.execute_script(js_snippets.load("select_store_fallback"))
     if clicked_text:
         wait_for_web_overlay_to_clear(driver, timeout=10)
         return True
@@ -691,7 +651,8 @@ def _recover_webview_context(driver) -> bool:
         switch_to_native(driver)
         switch_to_webview(driver, timeout=15)
         return True
-    except Exception:
+    except (WebDriverException, TimeoutException):
+        logger.debug("webview context recovery failed", exc_info=True)
         return False
 
 
@@ -775,8 +736,9 @@ def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, 
 
             try:
                 switch_to_native(driver)
-            except Exception as exc:
+            except WebDriverException as exc:
                 last_error = exc
+                logger.debug("switch_to_native failed during recovery", exc_info=True)
 
             dismiss_post_login_prompts(driver, timeout=3)
 
@@ -792,8 +754,9 @@ def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, 
                         break
                     driver.back()
                     time.sleep(1)
-                except Exception as exc:
+                except WebDriverException as exc:
                     last_error = exc
+                    logger.debug("driver.back() failed while seeking B2B webview", exc_info=True)
                     break
 
             try:
@@ -812,12 +775,13 @@ def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, 
             try:
                 driver.activate_app(settings.android_app_package)
                 time.sleep(2)
-            except Exception:
-                pass
+            except WebDriverException:
+                logger.debug("activate_app fallback failed during recovery", exc_info=True)
 
     try:
         current_context = getattr(driver, "current_context", "")
-    except Exception:
+    except WebDriverException:
+        logger.debug("current_context read failed after recovery attempts", exc_info=True)
         current_context = ""
     if "WEBVIEW" in current_context.upper():
         capture_web_debug_state(driver, capture_prefix)
@@ -826,12 +790,6 @@ def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, 
     if last_error:
         raise last_error
     raise TimeoutException("Failed to recover OnlineDuken home state.")
-
-
-def wait_for_web_customer_frontend(driver, timeout: int = 30) -> None:
-    WebDriverWait(driver, timeout).until(
-        lambda current_driver: "/web/customer-frontend/" in current_driver.current_url
-    )
 
 
 def apply_b2b_auth_url_in_webview(driver, settings: Settings) -> bool:

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+import shutil
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import NamedTuple
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
@@ -14,6 +16,46 @@ load_dotenv()
 
 def _env(name: str, default: str = "") -> str:
     return os.getenv(name, default).strip()
+
+
+def _detect_node_path() -> str:
+    return shutil.which("node") or ""
+
+
+def _detect_appium_main_js() -> str:
+    # `appium` is normally installed as a global npm package. We try to locate
+    # `index.js` next to the npm-managed binary so users do not have to set
+    # APPIUM_MAIN_JS by hand on each machine.
+    candidates: list[Path] = []
+    appdata = os.environ.get("APPDATA")
+    if appdata:
+        candidates.append(Path(appdata) / "npm" / "node_modules" / "appium" / "index.js")
+    npm_prefix = shutil.which("npm")
+    if npm_prefix:
+        candidates.append(Path(npm_prefix).resolve().parent / "node_modules" / "appium" / "index.js")
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    return ""
+
+
+def _detect_android_sdk_root() -> str:
+    for env_var in ("ANDROID_SDK_ROOT", "ANDROID_HOME"):
+        value = os.environ.get(env_var, "").strip()
+        if value and Path(value).is_dir():
+            return value
+    local_appdata = os.environ.get("LOCALAPPDATA")
+    if local_appdata:
+        guess = Path(local_appdata) / "Android" / "Sdk"
+        if guess.is_dir():
+            return str(guess)
+    home_guess = Path.home() / "Library" / "Android" / "sdk"
+    if home_guess.is_dir():
+        return str(home_guess)
+    linux_guess = Path.home() / "Android" / "Sdk"
+    if linux_guess.is_dir():
+        return str(linux_guess)
+    return ""
 
 
 def _csv_env(name: str) -> list[str]:
@@ -99,15 +141,10 @@ class Settings:
     onlineduken_entry_mode: str = field(default_factory=lambda: _env("ONLINEDUKEN_ENTRY_MODE", "full").lower())
 
     appium_server_url: str = field(default_factory=lambda: _env("APPIUM_SERVER_URL", "http://127.0.0.1:4723"))
-    appium_node_path: str = field(default_factory=lambda: _env("APPIUM_NODE_PATH", r"C:\Program Files\nodejs\node.exe"))
-    appium_main_js: str = field(
-        default_factory=lambda: _env(
-            "APPIUM_MAIN_JS",
-            r"C:\Users\Kanat\AppData\Roaming\npm\node_modules\appium\index.js",
-        )
-    )
-    android_sdk_root: str = field(default_factory=lambda: _env("ANDROID_SDK_ROOT", r"C:\Users\Kanat\AppData\Local\Android\Sdk"))
-    android_home: str = field(default_factory=lambda: _env("ANDROID_HOME", r"C:\Users\Kanat\AppData\Local\Android\Sdk"))
+    appium_node_path: str = field(default_factory=lambda: _env("APPIUM_NODE_PATH") or _detect_node_path())
+    appium_main_js: str = field(default_factory=lambda: _env("APPIUM_MAIN_JS") or _detect_appium_main_js())
+    android_sdk_root: str = field(default_factory=lambda: _env("ANDROID_SDK_ROOT") or _detect_android_sdk_root())
+    android_home: str = field(default_factory=lambda: _env("ANDROID_HOME") or _detect_android_sdk_root())
     android_app_path: str = field(default_factory=lambda: _env("ANDROID_APP_PATH"))
     android_app_package: str = field(default_factory=lambda: _env("ANDROID_APP_PACKAGE", "kz.halyk.onlinebank.stage"))
     android_app_activity: str = field(
@@ -241,3 +278,13 @@ class Settings:
         missing = [name for name, value in values if not value]
         if missing:
             raise ValueError(f"Missing required configuration: {', '.join(missing)}")
+
+
+@lru_cache(maxsize=1)
+def get_settings() -> Settings:
+    """Process-wide cached Settings instance.
+
+    Tests that need to mutate env vars between assertions can call
+    `get_settings.cache_clear()` to force a re-read.
+    """
+    return Settings()

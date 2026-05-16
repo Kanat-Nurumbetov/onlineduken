@@ -1,0 +1,62 @@
+name: web-smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Nightly at 03:00 UTC. Web suite is allowed to be slow, so we don't gate pushes on it.
+    - cron: "0 3 * * *"
+
+jobs:
+  web-headless:
+    runs-on: ubuntu-latest
+    env:
+      TARGET: local
+      PLATFORM: web
+      WEB_BROWSER: chrome
+      WEB_HEADLESS: "true"
+      WEB_BASE_URL: https://b2b.test.onlinebank.kz/web/customer-frontend/
+      B2B_AUTH_URL: ${{ secrets.B2B_AUTH_URL }}
+      B2B_OB_AUTH_TOKEN: ${{ secrets.B2B_OB_AUTH_TOKEN }}
+      B2B_INTERNAL_LOGIN_URL: ${{ secrets.B2B_INTERNAL_LOGIN_URL }}
+      B2B_INTERNAL_CLIENT_ID: ${{ secrets.B2B_INTERNAL_CLIENT_ID }}
+      B2B_INTERNAL_CLIENT_SECRET: ${{ secrets.B2B_INTERNAL_CLIENT_SECRET }}
+      B2B_INTERNAL_GRANT_TYPE: ${{ secrets.B2B_INTERNAL_GRANT_TYPE }}
+      TEST_ENV_HEALTHCHECK_URLS: ${{ secrets.TEST_ENV_HEALTHCHECK_URLS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[ci]"
+
+      - name: Check test environment availability
+        id: envcheck
+        run: python -m mobile_automation.healthcheck --github-output || true
+
+      - name: Skip when environment is unavailable
+        if: steps.envcheck.outputs.available != 'true'
+        run: echo "Test environment is unavailable. Web smoke is skipped."
+
+      - name: Run web suite
+        if: steps.envcheck.outputs.available == 'true'
+        run: pytest -m web --maxfail=1 --alluredir=allure-results-web
+
+      - name: Upload Allure raw results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-web-${{ github.run_number }}
+          path: allure-results-web
+          if-no-files-found: ignore

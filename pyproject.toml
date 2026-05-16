@@ -19,10 +19,58 @@ dependencies = [
   "selenium>=4.21.0",
 ]
 
+[project.optional-dependencies]
+# Pinned versions for CI to avoid surprise Selenium/Appium changes.
+# Local development uses the flexible dependencies above; CI installs with `.[ci]`.
+ci = [
+  "Appium-Python-Client==5.2.0",
+  "allure-pytest==2.14.3",
+  "pytest==8.4.0",
+  "pytest-xdist==3.8.0",
+  "qrcode[pil]==8.2",
+  "python-dotenv==1.1.0",
+  "requests==2.32.4",
+  "selenium==4.33.0",
+]
+dev = [
+  "ruff>=0.6.0",
+  "black>=24.8.0",
+  "pre-commit>=3.8.0",
+]
+
 [tool.setuptools.packages.find]
 include = ["mobile_automation*"]
+
+[tool.setuptools.package-data]
+"mobile_automation.js" = ["*.js"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
 addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "UP",  # pyupgrade
+]
+ignore = [
+  "E501",  # line length handled by formatter where it matters
+  "B008",  # function calls in defaults (we use them intentionally in dataclass fields)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]  # asserts in tests are fine
+"__init__.py" = ["F401"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
