@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import json
+import os
 import re
 import subprocess
 import sys
@@ -21,14 +21,14 @@ if str(ROOT) not in sys.path:
 
 from mobile_automation.config import Settings, get_settings
 from mobile_automation.driver_factory import build_driver
-from mobile_automation.driver_registry import register as register_driver, unregister as unregister_driver
+from mobile_automation.driver_registry import register as register_driver
+from mobile_automation.driver_registry import unregister as unregister_driver
 from mobile_automation.flows import enter_onlineduken, recover_onlineduken_home
 from mobile_automation.qr_assets import build_generated_qr_cases, ensure_qr_image
-from mobile_automation.reporting import attach_driver_state, attach_text, allure_enabled, write_allure_environment
+from mobile_automation.reporting import allure_enabled, attach_driver_state, attach_text, write_allure_environment
 from mobile_automation.runtime_auth import resolve_shared_b2b_auth_url
 from mobile_automation.web_driver_factory import build_web_driver
 from mobile_automation.web_flows import open_authenticated_onlineduken
-
 
 SHARED_B2B_AUTH_URL = "shared_b2b_auth_url"
 LOCAL_WORKER_UDID = "local_worker_udid"
@@ -365,9 +365,7 @@ def appium_service(settings: Settings):
             timeout_ms=30000,
         )
         if not service.is_running:
-            raise RuntimeError(
-                f"Local Appium service failed to start. Check log: {appium_log}"
-            )
+            raise RuntimeError(f"Local Appium service failed to start. Check log: {appium_log}")
 
         yield None
     finally:

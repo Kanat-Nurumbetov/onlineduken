@@ -10,7 +10,6 @@ from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 
@@ -72,10 +71,7 @@ def _bool_env(name: str, default: bool = False) -> bool:
 
 def normalize_b2b_auth_url(raw_url: str = "", raw_token: str = "") -> str:
     if not raw_url and raw_token:
-        raw_url = (
-            "https://b2b.test.onlinebank.kz/web/customer-frontend/auth"
-            f"?ob-auth-token={raw_token}"
-        )
+        raw_url = "https://b2b.test.onlinebank.kz/web/customer-frontend/auth" f"?ob-auth-token={raw_token}"
     if not raw_url:
         return ""
 
@@ -125,11 +121,9 @@ def parse_local_android_device_matrix(raw_matrix: str) -> list[LocalAndroidDevic
                 "LOCAL_ANDROID_DEVICE_MATRIX entries must use the format "
                 "'<udid>|<appium_server_url>' separated by ';'."
             )
-        udid, appium_server_url = [part.strip() for part in entry.split("|", 1)]
+        udid, appium_server_url = (part.strip() for part in entry.split("|", 1))
         if not udid or not appium_server_url:
-            raise ValueError(
-                "LOCAL_ANDROID_DEVICE_MATRIX entries must include both udid and appium server URL."
-            )
+            raise ValueError("LOCAL_ANDROID_DEVICE_MATRIX entries must include both udid and appium server URL.")
         devices.append(LocalAndroidDevice(udid=udid, appium_server_url=appium_server_url))
     return devices
 
@@ -167,19 +161,29 @@ class Settings:
     browserstack_access_key: str = field(default_factory=lambda: _env("BROWSERSTACK_ACCESS_KEY"))
     browserstack_app_android: str = field(default_factory=lambda: _env("BROWSERSTACK_APP_ANDROID"))
     browserstack_app_ios: str = field(default_factory=lambda: _env("BROWSERSTACK_APP_IOS"))
-    browserstack_android_device: str = field(default_factory=lambda: _env("BROWSERSTACK_ANDROID_DEVICE", "Samsung Galaxy S24"))
-    browserstack_android_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_ANDROID_OS_VERSION", "14.0"))
+    browserstack_android_device: str = field(
+        default_factory=lambda: _env("BROWSERSTACK_ANDROID_DEVICE", "Samsung Galaxy S24")
+    )
+    browserstack_android_os_version: str = field(
+        default_factory=lambda: _env("BROWSERSTACK_ANDROID_OS_VERSION", "14.0")
+    )
     browserstack_ios_device: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_DEVICE", "iPhone 15"))
     browserstack_ios_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_IOS_OS_VERSION", "17"))
-    browserstack_web_driver_mode: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_DRIVER_MODE", "mobile").lower())
+    browserstack_web_driver_mode: str = field(
+        default_factory=lambda: _env("BROWSERSTACK_WEB_DRIVER_MODE", "mobile").lower()
+    )
     browserstack_web_os: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_OS", "Windows"))
     browserstack_web_os_version: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_OS_VERSION", "11"))
     browserstack_web_browser: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_BROWSER", "Chrome"))
-    browserstack_web_browser_version: str = field(default_factory=lambda: _env("BROWSERSTACK_WEB_BROWSER_VERSION", "latest"))
+    browserstack_web_browser_version: str = field(
+        default_factory=lambda: _env("BROWSERSTACK_WEB_BROWSER_VERSION", "latest")
+    )
     browserstack_project_name: str = field(default_factory=lambda: _env("BROWSERSTACK_PROJECT_NAME", "B2B Mobile Demo"))
     browserstack_build_name: str = field(default_factory=lambda: _env("BROWSERSTACK_BUILD_NAME", "local-dev"))
     browserstack_webview_enabled: bool = field(default_factory=lambda: _bool_env("BROWSERSTACK_WEBVIEW_ENABLED", False))
-    browserstack_login_stagger_sec: int = field(default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "20")))
+    browserstack_login_stagger_sec: int = field(
+        default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "20"))
+    )
     web_browser: str = field(default_factory=lambda: _env("WEB_BROWSER", "chrome").lower())
     web_headless: bool = field(default_factory=lambda: _bool_env("WEB_HEADLESS", False))
     web_base_url: str = field(
@@ -228,7 +232,7 @@ class Settings:
     qr_common_template: str = field(
         default_factory=lambda: _env(
             "QR_COMMON_TEMPLATE",
-            'https://public.test.onlinebank.kz/applink/b2b/distributor/101040002039/client/{client_bin}/invoiceId/{invoice_id}/amount/{amount}/invoiceTitle/{invoice_title}',
+            "https://public.test.onlinebank.kz/applink/b2b/distributor/101040002039/client/{client_bin}/invoiceId/{invoice_id}/amount/{amount}/invoiceTitle/{invoice_title}",
         )
     )
     qr_megapolis_template: str = field(

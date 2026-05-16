@@ -136,15 +136,13 @@ def fetch_auth_url_with_command(settings: Settings) -> str:
     stderr = completed.stderr.strip()
     if completed.returncode != 0:
         raise RuntimeError(
-            "B2B auth fetch command failed "
-            f"with exit code {completed.returncode}. STDERR: {stderr or '<empty>'}"
+            "B2B auth fetch command failed " f"with exit code {completed.returncode}. STDERR: {stderr or '<empty>'}"
         )
 
     auth_url = _extract_auth_url(stdout)
     if not auth_url:
         raise RuntimeError(
-            "B2B auth fetch command did not return a usable auth URL or token. "
-            f"STDOUT: {stdout or '<empty>'}"
+            "B2B auth fetch command did not return a usable auth URL or token. " f"STDOUT: {stdout or '<empty>'}"
         )
     return auth_url
 
@@ -163,10 +161,7 @@ def fetch_auth_url_with_internal_login(settings: Settings) -> str:
         if not value
     ]
     if missing:
-        raise RuntimeError(
-            "Internal B2B login is configured incompletely. Missing: "
-            + ", ".join(missing)
-        )
+        raise RuntimeError("Internal B2B login is configured incompletely. Missing: " + ", ".join(missing))
 
     response = requests.post(
         settings.b2b_internal_login_url,

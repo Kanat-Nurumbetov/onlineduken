@@ -75,9 +75,9 @@ def test_web_catalog_state(web_driver, settings):
     with allure.step("Verify supplier cards or a valid empty state"):
         supplier_cards = web_driver.find_elements(*CatalogPage.SUPPLIER_CARDS)
         empty_state = web_driver.find_elements(*CatalogPage.EMPTY_STATE)
-        assert supplier_cards or empty_state or _catalog_ready(web_driver), (
-            "Catalog page opened, but neither supplier cards nor a valid empty state was detected."
-        )
+        assert (
+            supplier_cards or empty_state or _catalog_ready(web_driver)
+        ), "Catalog page opened, but neither supplier cards nor a valid empty state was detected."
 
 
 @allure.epic("OnlineDuken")
@@ -92,7 +92,9 @@ def test_web_orders_navigation(web_driver, settings):
         except TimeoutException:
             open_route(web_driver, "orders", settings.web_base_url)
     with allure.step("Verify that the orders title is visible"):
-        title = WebDriverWait(web_driver, 30).until(lambda current_driver: current_driver.find_element(*OrdersPage.TITLE))
+        title = WebDriverWait(web_driver, 30).until(
+            lambda current_driver: current_driver.find_element(*OrdersPage.TITLE)
+        )
         assert "заказ" in title.text.lower()
 
 
@@ -108,7 +110,9 @@ def test_web_bonuses_navigation_and_history_link(web_driver, settings):
         except TimeoutException:
             open_route(web_driver, "bonuses", settings.web_base_url)
     with allure.step("Verify bonuses title and history link"):
-        title = WebDriverWait(web_driver, 30).until(lambda current_driver: current_driver.find_element(*BonusesPage.TITLE))
+        title = WebDriverWait(web_driver, 30).until(
+            lambda current_driver: current_driver.find_element(*BonusesPage.TITLE)
+        )
         assert "бонус" in title.text.lower()
         assert web_driver.find_elements(*BonusesPage.HISTORY_LINK), "Bonus history link is not visible."
 

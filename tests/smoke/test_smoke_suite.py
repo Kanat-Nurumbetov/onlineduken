@@ -52,7 +52,8 @@ def _main_text(driver) -> str:
 
 def _catalog_route_loaded(driver) -> bool:
     return any(
-        marker in driver.current_url for marker in ("/web/customer-frontend/distributor", "/web/customer-frontend/distributors")
+        marker in driver.current_url
+        for marker in ("/web/customer-frontend/distributor", "/web/customer-frontend/distributors")
     )
 
 
@@ -122,7 +123,9 @@ def _select_first_store_if_needed(driver) -> bool:
         try:
             driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", elements[0])
             elements[0].click()
-            WebDriverWait(driver, 10).until(lambda current_driver: "выберите точку" not in _main_text(current_driver).lower())
+            WebDriverWait(driver, 10).until(
+                lambda current_driver: "выберите точку" not in _main_text(current_driver).lower()
+            )
             return True
         except Exception:
             continue
@@ -147,14 +150,14 @@ def _click_first_catalog_content(driver) -> bool:
 
 def _add_product_to_cart_from_catalog(driver, max_depth: int = 8) -> bool:
     for _ in range(max_depth):
-        if _click_first_matching_element(driver, CatalogPage.ADD_TO_CART_BUTTONS) or _click_first_visible_button_by_text(
-            driver, "В корзину"
-        ):
+        if _click_first_matching_element(
+            driver, CatalogPage.ADD_TO_CART_BUTTONS
+        ) or _click_first_visible_button_by_text(driver, "В корзину"):
             _resolve_quantity_popup_if_present(driver)
             return True
-        if _click_first_matching_element(driver, CatalogPage.CREATE_ORDER_BUTTONS) or _click_first_visible_button_by_text(
-            driver, "Создать заказ"
-        ):
+        if _click_first_matching_element(
+            driver, CatalogPage.CREATE_ORDER_BUTTONS
+        ) or _click_first_visible_button_by_text(driver, "Создать заказ"):
             _select_first_store_if_needed(driver)
             WebDriverWait(driver, 10).until(lambda current_driver: bool(_main_text(current_driver)))
             continue
@@ -292,9 +295,9 @@ def test_smoke_catalog_has_suppliers(ui_smoke_driver):
         WebDriverWait(ui_smoke_driver, 30).until(lambda current_driver: _catalog_page_is_ready(current_driver))
         supplier_cards = ui_smoke_driver.find_elements(*CatalogPage.SUPPLIER_CARDS)
         empty_state = ui_smoke_driver.find_elements(*CatalogPage.EMPTY_STATE)
-        assert supplier_cards or empty_state or _catalog_page_is_ready(ui_smoke_driver), (
-            "Catalog did not show supplier cards, a valid empty state, or the distributor page structure."
-        )
+        assert (
+            supplier_cards or empty_state or _catalog_page_is_ready(ui_smoke_driver)
+        ), "Catalog did not show supplier cards, a valid empty state, or the distributor page structure."
 
 
 @allure.epic("OnlineDuken")
@@ -389,9 +392,9 @@ def test_smoke_cart_and_order_creation(payments_smoke_driver, settings):
     if not buttons and payments_smoke_driver.find_elements(*CatalogPage.EMPTY_STATE):
         pytest.skip("Catalog is open, but current dataset has no distributors available for order creation.")
     assert buttons, "No 'Создать заказ' entry is available in catalog."
-    assert _add_product_to_cart_from_catalog(payments_smoke_driver), (
-        "Could not drill down from catalog to a product with 'В корзину'."
-    )
+    assert _add_product_to_cart_from_catalog(
+        payments_smoke_driver
+    ), "Could not drill down from catalog to a product with 'В корзину'."
     _open_cart(payments_smoke_driver)
     assert _cart_has_checkout_state(payments_smoke_driver), "Cart did not reach a populated checkout state."
     assert _submit_order_from_cart(payments_smoke_driver), "Order was not created successfully from cart."
@@ -412,5 +415,7 @@ def test_smoke_cart_and_order_creation_from_home_optional(payments_smoke_driver)
         pytest.skip("Home page has no visible product card with 'В корзину' in the current dataset.")
     _resolve_quantity_popup_if_present(payments_smoke_driver)
     _open_cart(payments_smoke_driver)
-    assert _cart_has_checkout_state(payments_smoke_driver), "Cart did not reach a populated checkout state after home add."
+    assert _cart_has_checkout_state(
+        payments_smoke_driver
+    ), "Cart did not reach a populated checkout state after home add."
     assert _submit_order_from_cart(payments_smoke_driver), "Order was not created successfully from home product flow."

@@ -1,2 +1,1 @@
 """OnlineDuken mobile automation package."""
-

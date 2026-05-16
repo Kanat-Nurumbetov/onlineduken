@@ -7,9 +7,7 @@ from mobile_automation.runtime_auth import _extract_auth_url, _extract_from_valu
 
 class TestExtractFromValue:
     def test_url_in_dict(self):
-        payload = {
-            "current_url": "https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=xyz"
-        }
+        payload = {"current_url": "https://b2b.test.onlinebank.kz/web/customer-frontend/auth?ob-auth-token=xyz"}
         result = _extract_from_value(payload)
         assert "ob-auth-token=xyz" in result
         assert "lang=ru" in result

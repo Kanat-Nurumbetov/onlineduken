@@ -69,6 +69,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["B011"]  # asserts in tests are fine
+"tests/conftest.py" = ["E402"]  # sys.path tweak before mobile_automation imports
 "__init__.py" = ["F401"]
 
 [tool.black]

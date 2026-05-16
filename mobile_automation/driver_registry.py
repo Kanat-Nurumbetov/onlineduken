@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Driver -> session-manager registry.
 
 Some flow helpers receive a raw driver handle but need to ask "who owns this
@@ -11,10 +9,12 @@ of scope (test session ended) is cleaned up automatically — we never leak
 references to torn-down sessions.
 """
 
+from __future__ import annotations
+
 import weakref
 from typing import Any, Protocol
 
-_REGISTRY: "weakref.WeakValueDictionary[str, Any]" = weakref.WeakValueDictionary()
+_REGISTRY: weakref.WeakValueDictionary[str, Any] = weakref.WeakValueDictionary()
 
 
 class _Restartable(Protocol):

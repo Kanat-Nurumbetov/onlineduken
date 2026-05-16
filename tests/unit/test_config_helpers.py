@@ -42,14 +42,10 @@ class TestIsValidAuthUrl:
         assert is_valid_b2b_auth_url(url)
 
     def test_missing_token_invalid(self):
-        assert not is_valid_b2b_auth_url(
-            "https://b2b.test.onlinebank.kz/web/customer-frontend/auth?lang=ru"
-        )
+        assert not is_valid_b2b_auth_url("https://b2b.test.onlinebank.kz/web/customer-frontend/auth?lang=ru")
 
     def test_wrong_path_invalid(self):
-        assert not is_valid_b2b_auth_url(
-            "https://b2b.test.onlinebank.kz/other/path?ob-auth-token=abc"
-        )
+        assert not is_valid_b2b_auth_url("https://b2b.test.onlinebank.kz/other/path?ob-auth-token=abc")
 
     def test_empty_invalid(self):
         assert not is_valid_b2b_auth_url("")

@@ -29,5 +29,5 @@ class TestNormalizeText:
         assert normalize_text("") == ""
 
     def test_handles_mojibake(self):
-        mojibake = "Оплатить  заказ".encode("utf-8").decode("latin-1")
+        mojibake = "Оплатить  заказ".encode().decode("latin-1")
         assert normalize_text(mojibake) == "Оплатить заказ"

@@ -21,15 +21,24 @@ class OnlineDukenHomePage:
     MORE_TAB = (By.CSS_SELECTOR, 'a[href="/web/customer-frontend/more"]')
     BANNER_BUTTON = (By.CSS_SELECTOR, "button.banner-btn")
     ADD_TO_CART_BUTTON = (By.XPATH, "//button[normalize-space()='\u0412 \u043a\u043e\u0440\u0437\u0438\u043d\u0443']")
-    CREATE_ORDER_BUTTON = (By.XPATH, "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']")
+    CREATE_ORDER_BUTTON = (
+        By.XPATH,
+        "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']",
+    )
 
 
 class CatalogPage:
     ROOT = (By.CSS_SELECTOR, "hb2b-distributor")
-    TITLE = (By.CSS_SELECTOR, 'input[placeholder="\u041d\u0430\u0439\u0442\u0438 \u043f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0430"]')
+    TITLE = (
+        By.CSS_SELECTOR,
+        'input[placeholder="\u041d\u0430\u0439\u0442\u0438 \u043f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0430"]',
+    )
     SUPPLIER_CARDS = (By.CSS_SELECTOR, "div.distributor-card, [class*='distributor-card']")
     EMPTY_STATE = (By.CSS_SELECTOR, "div.search-centered")
-    CREATE_ORDER_BUTTONS = (By.XPATH, "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']")
+    CREATE_ORDER_BUTTONS = (
+        By.XPATH,
+        "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']",
+    )
     ADD_TO_CART_BUTTONS = (By.XPATH, "//button[normalize-space()='\u0412 \u043a\u043e\u0440\u0437\u0438\u043d\u0443']")
 
 
@@ -45,14 +54,23 @@ class BonusesPage:
 class PaymentPage:
     TITLE = (By.CSS_SELECTOR, "h1.mobile-page-header__title")
     ALL_TAB = (By.XPATH, "//button[normalize-space()='\u0412\u0441\u0435']")
-    MANUAL_PAYMENT_TAB = (By.XPATH, "//button[normalize-space()='\u0420\u0443\u0447\u043d\u0430\u044f \u043e\u043f\u043b\u0430\u0442\u0430']")
+    MANUAL_PAYMENT_TAB = (
+        By.XPATH,
+        "//button[normalize-space()='\u0420\u0443\u0447\u043d\u0430\u044f \u043e\u043f\u043b\u0430\u0442\u0430']",
+    )
     QR_PAYMENT_TAB = (By.XPATH, "//button[normalize-space()='QR \u043e\u043f\u043b\u0430\u0442\u0430']")
 
 
 class CartPage:
     TITLE = (By.CSS_SELECTOR, "h1.mobile-page-header__title")
-    CREATE_ORDER_BUTTON = (By.XPATH, "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']")
-    EMPTY_STATE = (By.XPATH, "//*[contains(normalize-space(), '\u043a\u043e\u0440\u0437\u0438\u043d') and contains(normalize-space(), '\u043f\u0443\u0441\u0442')]")
+    CREATE_ORDER_BUTTON = (
+        By.XPATH,
+        "//button[normalize-space()='\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0437\u0430\u043a\u0430\u0437']",
+    )
+    EMPTY_STATE = (
+        By.XPATH,
+        "//*[contains(normalize-space(), '\u043a\u043e\u0440\u0437\u0438\u043d') and contains(normalize-space(), '\u043f\u0443\u0441\u0442')]",
+    )
 
 
 class OrderResultPage:

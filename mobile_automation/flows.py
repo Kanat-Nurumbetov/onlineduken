@@ -14,7 +14,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from mobile_automation import js as js_snippets
 from mobile_automation.android_ids import APP_PACKAGE, FULL_PROGRESS, PASSCODE_KEYBOARD, PIN_EDIT_TEXT, TOUCH_OUTSIDE
 from mobile_automation.config import Settings
-from mobile_automation.pages.native import B2BWebViewPage, LoginPage, MainHomePage, MainPromptPage, PasscodePage, SmsCodePage
+from mobile_automation.pages.native import (
+    B2BWebViewPage,
+    LoginPage,
+    MainHomePage,
+    MainPromptPage,
+    PasscodePage,
+    SmsCodePage,
+)
 from mobile_automation.wait_utils import poll_until
 from mobile_automation.web_flows import wait_for_customer_frontend as wait_for_web_customer_frontend  # noqa: F401
 
@@ -370,7 +377,8 @@ def ensure_expected_contract_selected(driver, settings: Settings) -> bool:
     for _ in range(8):
         if click_first_clickable_ancestor_for_text(driver, settings.contract_suffix):
             WebDriverWait(driver, 15).until(
-                lambda current_driver: settings.contract_suffix in current_driver.find_element(*MainHomePage.CONTRACT_NAME).text
+                lambda current_driver: settings.contract_suffix
+                in current_driver.find_element(*MainHomePage.CONTRACT_NAME).text
             )
             return True
         if not swipe_up_within_element(driver, MainHomePage.CONTRACT_LIST):
@@ -574,7 +582,9 @@ def switch_to_webview(driver, timeout: int = 30, settings: Settings | None = Non
                 return context
         time.sleep(1)
     capture_native_debug_state(driver, "webview_context_timeout")
-    raise TimeoutException("WEBVIEW context was not found. Debug artifacts saved to artifacts/webview_context_timeout.*")
+    raise TimeoutException(
+        "WEBVIEW context was not found. Debug artifacts saved to artifacts/webview_context_timeout.*"
+    )
 
 
 def switch_to_native(driver) -> None:
@@ -722,10 +732,12 @@ def open_onlineduken_route(driver, route_suffix: str) -> None:
     choose_first_store_in_webview_if_present(driver)
 
 
-def recover_onlineduken_home(driver, settings: Settings, max_attempts: int = 2, capture_prefix: str = "onlineduken_home_recovery") -> None:
+def recover_onlineduken_home(
+    driver, settings: Settings, max_attempts: int = 2, capture_prefix: str = "onlineduken_home_recovery"
+) -> None:
     last_error: Exception | None = None
 
-    for attempt in range(max_attempts):
+    for _attempt in range(max_attempts):
         try:
             try:
                 ensure_webview_context(driver, timeout=10)
@@ -818,7 +830,9 @@ def enter_onlineduken(driver, settings: Settings, switch_to_webview_context: boo
                 continue
             time.sleep(3)
             unlock_if_needed(driver, settings)
-            ready_state = wait_for_post_deeplink_ready_state(driver, settings, timeout=max(settings.explicit_wait_sec, 45))
+            ready_state = wait_for_post_deeplink_ready_state(
+                driver, settings, timeout=max(settings.explicit_wait_sec, 45)
+            )
             if ready_state == "webview":
                 break
             time.sleep(2)

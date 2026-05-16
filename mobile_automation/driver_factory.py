@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from appium import webdriver
-from appium.webdriver.client_config import AppiumClientConfig
 from appium.options.android import UiAutomator2Options
 from appium.options.common.base import AppiumOptions
 from appium.options.ios import XCUITestOptions
+from appium.webdriver.client_config import AppiumClientConfig
 
 from mobile_automation.config import Settings
 
@@ -63,13 +63,16 @@ def _android_browserstack_options(settings: Settings, session_name: str) -> UiAu
     options.set_capability("appium:app", settings.browserstack_app_android)
     options.set_capability("appium:autoGrantPermissions", True)
     options.set_capability("appium:newCommandTimeout", 240)
-    options.set_capability("bstack:options", {
-        **_browserstack_common_caps(settings, session_name),
-        "deviceName": settings.browserstack_android_device,
-        "platformVersion": settings.browserstack_android_os_version,
-        "appiumLogs": True,
-        "deviceLogs": True,
-    })
+    options.set_capability(
+        "bstack:options",
+        {
+            **_browserstack_common_caps(settings, session_name),
+            "deviceName": settings.browserstack_android_device,
+            "platformVersion": settings.browserstack_android_os_version,
+            "appiumLogs": True,
+            "deviceLogs": True,
+        },
+    )
     return options
 
 
@@ -99,14 +102,17 @@ def _ios_browserstack_options(settings: Settings, session_name: str) -> XCUITest
     options.automation_name = "XCUITest"
     options.set_capability("appium:app", settings.browserstack_app_ios)
     options.set_capability("appium:newCommandTimeout", 240)
-    options.set_capability("bstack:options", {
-        **_browserstack_common_caps(settings, session_name),
-        "deviceName": settings.browserstack_ios_device,
-        "platformVersion": settings.browserstack_ios_os_version,
-        "appiumLogs": True,
-        "deviceLogs": True,
-        "autoAcceptAlerts": True,
-    })
+    options.set_capability(
+        "bstack:options",
+        {
+            **_browserstack_common_caps(settings, session_name),
+            "deviceName": settings.browserstack_ios_device,
+            "platformVersion": settings.browserstack_ios_os_version,
+            "appiumLogs": True,
+            "deviceLogs": True,
+            "autoAcceptAlerts": True,
+        },
+    )
     return options
 
 

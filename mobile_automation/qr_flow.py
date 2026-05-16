@@ -16,7 +16,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from mobile_automation.android_ids import app_id
 from mobile_automation.config import GeneratedQrCase, Settings
 from mobile_automation.driver_registry import get_session_manager_for
-from mobile_automation.flows import capture_native_debug_state, enter_onlineduken, recover_onlineduken_home, switch_to_native
+from mobile_automation.flows import (
+    capture_native_debug_state,
+    enter_onlineduken,
+    recover_onlineduken_home,
+    switch_to_native,
+)
 from mobile_automation.pages.native import NativePaymentPage, OnlineDukenNativeHomePage, PhotoPickerPage, QrScannerPage
 from mobile_automation.text_utils import normalize_text
 
@@ -32,9 +37,7 @@ def _adb_path(settings: Settings) -> Path:
     discovered = shutil.which("adb")
     if discovered:
         return Path(discovered)
-    raise RuntimeError(
-        "adb executable was not found. Set ANDROID_SDK_ROOT or add adb to PATH."
-    )
+    raise RuntimeError("adb executable was not found. Set ANDROID_SDK_ROOT or add adb to PATH.")
 
 
 def _run_adb(settings: Settings, *args: str) -> subprocess.CompletedProcess:
@@ -191,7 +194,7 @@ def _is_payment_confirmation_screen(page_source: str) -> bool:
 
 def open_qr_scanner(driver) -> None:
     last_error: Exception | None = None
-    for attempt_index in range(3):
+    for _attempt_index in range(3):
         qr_tab = _wait_for_native_presence(driver, OnlineDukenNativeHomePage.QR_TAB, timeout=30)
         try:
             qr_tab.click()

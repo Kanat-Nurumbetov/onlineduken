@@ -34,7 +34,7 @@ def parse_healthcheck_target(raw_target: str) -> HealthcheckTarget:
     if "|" not in target:
         return HealthcheckTarget(url=target)
 
-    url, raw_statuses = [part.strip() for part in target.split("|", 1)]
+    url, raw_statuses = (part.strip() for part in target.split("|", 1))
     if not url:
         raise ValueError("Healthcheck URL cannot be empty.")
     return HealthcheckTarget(url=url, expected_statuses=_parse_expected_statuses(raw_statuses))

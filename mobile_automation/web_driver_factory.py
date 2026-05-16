@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from appium import webdriver as appium_webdriver
-from appium.webdriver.client_config import AppiumClientConfig
 from appium.options.android import UiAutomator2Options
+from appium.webdriver.client_config import AppiumClientConfig
 from selenium import webdriver
 from selenium.webdriver.remote.client_config import ClientConfig
 

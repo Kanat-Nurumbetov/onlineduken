@@ -5,12 +5,12 @@ import time
 import pytest
 
 from mobile_automation.flows import (
-    capture_web_debug_state,
     capture_native_debug_state,
+    capture_web_debug_state,
     click_web_element,
     dismiss_post_login_prompts,
-    enter_onlineduken,
     ensure_expected_contract_selected,
+    enter_onlineduken,
     open_onlineduken_from_main,
     try_complete_login,
     wait_for_main_home,
