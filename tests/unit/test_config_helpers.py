@@ -88,12 +88,13 @@ class TestAppiumNoResetFlag:
         yield
         get_settings.cache_clear()
 
-    def test_default_is_true(self):
-        assert Settings().appium_no_reset is True
-
-    def test_override_to_false(self, monkeypatch):
-        monkeypatch.setenv("APPIUM_NO_RESET", "false")
+    def test_default_is_false(self):
+        # Off by default — Halyk stage build can wedge UIAutomator2 between sessions.
         assert Settings().appium_no_reset is False
+
+    def test_override_to_true(self, monkeypatch):
+        monkeypatch.setenv("APPIUM_NO_RESET", "true")
+        assert Settings().appium_no_reset is True
 
     def test_truthy_strings(self, monkeypatch):
         for value in ("1", "true", "yes", "on", "TRUE"):

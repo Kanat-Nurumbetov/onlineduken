@@ -151,10 +151,13 @@ class Settings:
     android_udid: str = field(default_factory=lambda: _env("ANDROID_UDID", "emulator-5554"))
     android_platform_version: str = field(default_factory=lambda: _env("ANDROID_PLATFORM_VERSION"))
     local_android_device_matrix: str = field(default_factory=lambda: _env("LOCAL_ANDROID_DEVICE_MATRIX"))
-    # When true (default), Appium keeps app data between sessions, so the second
-    # smoke run on the same emulator lands on the PIN screen instead of
-    # phone+SMS. Set to false to force a clean install per session.
-    appium_no_reset: bool = field(default_factory=lambda: _bool_env("APPIUM_NO_RESET", True))
+    # Opt-in: when true, Appium keeps app data between sessions so the second
+    # smoke run on the same emulator can land on the PIN screen instead of
+    # phone+SMS. Off by default because the Halyk stage build can wedge the
+    # UIAutomator2 bridge if the app process survives between sessions —
+    # enable only when you have verified your build/emulator pair stays
+    # responsive in this mode.
+    appium_no_reset: bool = field(default_factory=lambda: _bool_env("APPIUM_NO_RESET", False))
 
     ios_app_path: str = field(default_factory=lambda: _env("IOS_APP_PATH"))
     ios_bundle_id: str = field(default_factory=lambda: _env("IOS_BUNDLE_ID"))
