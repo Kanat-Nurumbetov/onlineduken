@@ -4,6 +4,8 @@ import pytest
 
 from mobile_automation.config import (
     LocalAndroidDevice,
+    Settings,
+    get_settings,
     is_valid_b2b_auth_url,
     normalize_b2b_auth_url,
     parse_local_android_device_matrix,
@@ -75,3 +77,25 @@ class TestParseLocalDeviceMatrix:
     def test_missing_part_raises(self):
         with pytest.raises(ValueError, match="must include both"):
             parse_local_android_device_matrix("emulator-5554|")
+
+
+class TestAppiumNoResetFlag:
+    @pytest.fixture(autouse=True)
+    def _clear_cache(self, monkeypatch):
+        # Drop both env override and the cached Settings so each test sees a clean slate.
+        monkeypatch.delenv("APPIUM_NO_RESET", raising=False)
+        get_settings.cache_clear()
+        yield
+        get_settings.cache_clear()
+
+    def test_default_is_true(self):
+        assert Settings().appium_no_reset is True
+
+    def test_override_to_false(self, monkeypatch):
+        monkeypatch.setenv("APPIUM_NO_RESET", "false")
+        assert Settings().appium_no_reset is False
+
+    def test_truthy_strings(self, monkeypatch):
+        for value in ("1", "true", "yes", "on", "TRUE"):
+            monkeypatch.setenv("APPIUM_NO_RESET", value)
+            assert Settings().appium_no_reset is True, f"expected truthy for {value!r}"

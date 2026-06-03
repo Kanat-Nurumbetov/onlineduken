@@ -39,6 +39,13 @@ def _android_local_options(settings: Settings) -> UiAutomator2Options:
     options.set_capability("appium:autoGrantPermissions", True)
     options.set_capability("appium:adbExecTimeout", 180000)
     options.set_capability("appium:newCommandTimeout", 240)
+    # Preserve app data between Appium sessions so a follow-up run can skip
+    # the SMS step and land on the existing PIN screen. Set APPIUM_NO_RESET=false
+    # in .env to force a clean install for tests that need pristine state.
+    if settings.appium_no_reset:
+        options.set_capability("appium:noReset", True)
+        options.set_capability("appium:fullReset", False)
+        options.set_capability("appium:dontStopAppOnReset", True)
     if settings.android_udid:
         options.udid = settings.android_udid
         options.set_capability("appium:udid", settings.android_udid)
