@@ -1,4 +1,4 @@
-name: web-smoke
+name: push-web-smoke
 
 on:
   push:
