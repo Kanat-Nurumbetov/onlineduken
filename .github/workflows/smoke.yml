@@ -1,4 +1,4 @@
-name: mobile-smoke
+name: web-smoke
 
 on:
   push:
@@ -10,31 +10,20 @@ on:
         default: true
         type: boolean
 
+# Push smoke covers the frontend tier only: the OnlineDuken web suite in a
+# headless browser with a bootstrapped auth token. Mobile flows run locally
+# on the emulator during development; BrowserStack device runs are manual
+# (mobile-manual workflow) and reserved for cross-platform checks.
 jobs:
-  smoke-android-browserstack:
+  smoke-onlineduken-web:
     if: github.event_name != 'push' || vars.ENABLE_PUSH_SMOKE != 'false' || inputs.force_run == true
     runs-on: ubuntu-latest
     env:
-      TARGET: browserstack
-      PLATFORM: android
-      ONLINEDUKEN_ENTRY_MODE: full
-      B2B_SHARED_AUTH_BOOTSTRAP: false
-      B2B_APP_AUTH_BOOTSTRAP: false
-      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
-      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-      BROWSERSTACK_APP_ANDROID: ${{ secrets.BROWSERSTACK_APP_ANDROID }}
-      BROWSERSTACK_PROJECT_NAME: B2B Mobile Demo
-      BROWSERSTACK_BUILD_NAME: smoke-${{ github.ref_name }}-${{ github.run_number }}
-      BROWSERSTACK_WEBVIEW_ENABLED: false
-      BROWSERSTACK_LOGIN_STAGGER_SEC: 60
-      PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
-      SMS_CODE: ${{ secrets.SMS_CODE }}
-      PIN_CODE: ${{ secrets.PIN_CODE }}
-      CLIENT_BIN: ${{ secrets.CLIENT_BIN }}
-      QR_AMOUNT: ${{ secrets.QR_AMOUNT }}
-      QR_INVOICE_ID: ${{ secrets.QR_INVOICE_ID }}
-      QR_INVOICE_TITLE: ${{ secrets.QR_INVOICE_TITLE }}
-      QR_MEGAPOLIS_CONTRACT: ${{ secrets.QR_MEGAPOLIS_CONTRACT }}
+      TARGET: local
+      WEB_BROWSER: chrome
+      WEB_HEADLESS: "true"
+      B2B_SHARED_AUTH_BOOTSTRAP: "true"
+      B2B_APP_AUTH_BOOTSTRAP: "false"
       B2B_AUTH_URL: ${{ secrets.B2B_AUTH_URL }}
       B2B_OB_AUTH_TOKEN: ${{ secrets.B2B_OB_AUTH_TOKEN }}
       B2B_INTERNAL_LOGIN_URL: ${{ secrets.B2B_INTERNAL_LOGIN_URL }}
@@ -42,8 +31,6 @@ jobs:
       B2B_INTERNAL_CLIENT_SECRET: ${{ secrets.B2B_INTERNAL_CLIENT_SECRET }}
       B2B_INTERNAL_GRANT_TYPE: ${{ secrets.B2B_INTERNAL_GRANT_TYPE }}
       TEST_ENV_HEALTHCHECK_URLS: ${{ secrets.TEST_ENV_HEALTHCHECK_URLS }}
-      QR_IMAGE_PATH: ${{ secrets.QR_IMAGE_PATH }}
-      INVOICE_REFERENCE: ${{ secrets.INVOICE_REFERENCE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,14 +53,14 @@ jobs:
         if: steps.envcheck.outputs.available != 'true'
         run: echo "Test environment is unavailable. Smoke run is skipped."
 
-      - name: Run smoke tests
+      - name: Run web smoke suite
         if: steps.envcheck.outputs.available == 'true'
-        run: pytest -m "smoke and browserstack_safe and not manual" -n 3 --maxfail=1 --alluredir=allure-results
+        run: pytest -m web -n 2 --maxfail=1 --alluredir=allure-results
 
       - name: Upload Allure raw results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-smoke-${{ github.run_number }}
+          name: allure-results-web-smoke-${{ github.run_number }}
           path: allure-results
           if-no-files-found: ignore
