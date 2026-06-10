@@ -3,7 +3,9 @@ param(
     [switch]$SafeSmoke,
     [switch]$BootstrapOnly,
     [switch]$Allure,
-    [string]$EntryMode = "token",
+    # Full phone login is affordable now that it runs once per worker session;
+    # tests start from OnlineDuken home instead of re-entering through auth.
+    [string]$EntryMode = "full",
     [string]$BaseAvdName = "Medium_Phone_API_36.0",
     [string]$ParallelAvdName = "Medium_Phone_Parallel",
     [string]$AllureResultsDir = "allure-results"
