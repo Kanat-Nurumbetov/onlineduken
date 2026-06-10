@@ -801,3 +801,19 @@ Update this file after:
 - The 3 skips are the known intentional ones: invoice payment (INVOICE_REFERENCE not set) and both cart flows (no stable supplier yet)
 - `test_smoke_catalog_has_suppliers` passed in this run as well
 - Guard fix along the way: the local-parallel protection no longer blocks browser-only runs (`-m web -n 2`); mixed expressions still trip it
+
+## Update On 2026-06-10 (One Login Per Worker Session, Home As Test Start Point)
+
+- Smoke fixture architecture was reworked at the user request:
+  - one session-scoped ManagedDriverSession per pytest worker serves all OnlineDuken tests
+  - the phone/SMS/PIN login runs once when the worker session is first built (serialized across workers by the login lock)
+  - the contract for every OnlineDuken test is: start from OnlineDuken home, re-established between tests; the restart ladder rebuilds the session with a fresh login only when it dies
+  - the two native-shell tests intentionally keep fresh per-test sessions: they are the dedicated login/entry checks
+  - run_local_smoke.ps1 defaults to EntryMode=full; mobile smoke no longer depends on auth tokens (tokens remain the web-tier mechanism)
+- Measured effect on the 2-worker two-emulator bench:
+  - before: 8 passed, 3 skipped in 21:58 (about 19 minutes inside fixtures, including one anomalous 740s payments session build)
+  - after: 8 passed, 3 skipped in 5:21; navigation tests cost 3-5s each against the shared session
+- One flake was caught and fixed along the way:
+  - qr-common failed once with a fully valid payment screen that never reacted to the single pay-button tap; it passed standalone immediately after
+  - submit_qr_payment now re-taps the pay button once after 10 quiet seconds and the submission timeout grew 15s -> 30s
+- Verification chain for this rework: ruff clean, 54 unit tests, full -n 2 smoke green twice (8:07 with one QR flake, then 5:21 fully green after the re-tap fix)
