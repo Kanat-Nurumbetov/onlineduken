@@ -21,6 +21,7 @@ from mobile_automation.android_ids import PASSCODE_KEYBOARD, PIN_EDIT_TEXT
 from mobile_automation.config import Settings
 from mobile_automation.flows._helpers import wait_for_any
 from mobile_automation.flows.debug import capture_native_debug_state
+from mobile_automation.login_lock import hold_login_lock
 from mobile_automation.pages.native import LoginPage, MainPromptPage, PasscodePage, SmsCodePage
 from mobile_automation.wait_utils import poll_until
 
@@ -143,6 +144,13 @@ def dismiss_auth_retry_dialog_if_present(driver) -> bool:
 
 
 def try_complete_login(driver, settings: Settings) -> None:
+    # The whole retry loop stays under one lock: every retry re-requests an
+    # SMS code, so two workers interleaving retries still poison each other.
+    with hold_login_lock(driver, settings):
+        _try_complete_login_serialized(driver, settings)
+
+
+def _try_complete_login_serialized(driver, settings: Settings) -> None:
     last_retry_reason = ""
     for attempt_index in range(3):
         if dismiss_auth_retry_dialog_if_present(driver):

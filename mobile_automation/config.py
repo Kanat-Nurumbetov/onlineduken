@@ -193,6 +193,14 @@ class Settings:
         # for the shared test phone's OTP (run refactor-verify-main-qr-20260610).
         default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "60"))
     )
+    login_lock_enabled: bool = field(default_factory=lambda: _bool_env("LOGIN_LOCK_ENABLED", True))
+    login_lock_timeout_sec: int = field(default_factory=lambda: int(_env("LOGIN_LOCK_TIMEOUT_SEC", "600")))
+    login_lock_path: str = field(
+        default_factory=lambda: _env(
+            "LOGIN_LOCK_PATH",
+            str(Path(__file__).resolve().parents[1] / "artifacts" / "runtime" / "login.lock"),
+        )
+    )
     web_browser: str = field(default_factory=lambda: _env("WEB_BROWSER", "chrome").lower())
     web_headless: bool = field(default_factory=lambda: _bool_env("WEB_HEADLESS", False))
     web_base_url: str = field(
