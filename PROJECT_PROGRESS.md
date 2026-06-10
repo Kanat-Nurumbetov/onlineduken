@@ -775,3 +775,16 @@ Update this file after:
   - either `B2B_OB_AUTH_TOKEN` / `B2B_AUTH_URL` secrets (tokens expire, so this is the weaker option)
   - or the internal login endpoint secrets (`B2B_INTERNAL_LOGIN_URL` / `B2B_INTERNAL_CLIENT_ID` / `B2B_INTERNAL_CLIENT_SECRET`) for self-refreshing auth
   - plus `TEST_ENV_HEALTHCHECK_URLS` so the healthcheck gate reflects the real web env
+
+## Update On 2026-06-10 (Web Suite First Green Run Via App-Login Bootstrap)
+
+- The web tier auth question is closed for local development:
+  - `B2B_APP_AUTH_BOOTSTRAP` performs one real login on the emulator, enters OnlineDuken, and extracts the reusable auth URL from the WebView
+  - the URL is cached in `artifacts/runtime/b2b_auth.json` (TTL `B2B_AUTH_CACHE_TTL_SEC`, 30 min)
+  - the `web_auth_url` fixture uses the same resolver, so the web suite refreshes its own token automatically while the emulator is up
+- First real green run of the browser suite:
+  - `5 passed in 43.01s` (home, catalog, orders, bonuses + history, more)
+  - until today this suite had only ever skipped cleanly
+- This also live-validated refactor-branch internals end to end: flows package, runtime_auth, login lock, OnlineDuken entry
+- Practical daily loop: `run_local_smoke.ps1 -BootstrapOnly` once, then develop against `run_web_suite.ps1` in seconds-long iterations
+- CI note: the app-login bootstrap cannot run on GitHub runners (no emulator); push web smoke still needs the internal login endpoint secrets or a token secret
