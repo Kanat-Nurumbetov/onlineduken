@@ -290,10 +290,11 @@ def wait_for_qr_payment_screen(driver, timeout: int = 45) -> None:
     _wait_for_native_presence(driver, NativePaymentPage.PAY_BUTTON, timeout=timeout)
 
 
-def submit_qr_payment(driver, timeout: int = 15) -> str:
+def submit_qr_payment(driver, timeout: int = 30) -> str:
     _wait_for_native_presence(driver, NativePaymentPage.PAY_BUTTON, timeout=20).click()
     starting_activity = getattr(driver, "current_activity", "")
     end = time.time() + timeout
+    retap_at = time.time() + 10
 
     while time.time() < end:
         page_source = driver.page_source
@@ -317,6 +318,18 @@ def submit_qr_payment(driver, timeout: int = 15) -> str:
 
         if not driver.find_elements(*NativePaymentPage.PAY_BUTTON):
             return "pay_button_disappeared"
+
+        if time.time() >= retap_at:
+            # A single tap on the native pay button occasionally does not
+            # register. Repeating it here is safe: the screen provably has
+            # not reacted yet (same activity, button present, no toast).
+            retap_at = float("inf")
+            try:
+                buttons = driver.find_elements(*NativePaymentPage.PAY_BUTTON)
+                if buttons:
+                    buttons[0].click()
+            except WebDriverException:
+                logger.debug("pay button re-tap failed; keeping the wait loop", exc_info=True)
 
         time.sleep(1)
 
