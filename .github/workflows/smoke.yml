@@ -26,7 +26,7 @@ jobs:
       BROWSERSTACK_PROJECT_NAME: B2B Mobile Demo
       BROWSERSTACK_BUILD_NAME: smoke-${{ github.ref_name }}-${{ github.run_number }}
       BROWSERSTACK_WEBVIEW_ENABLED: false
-      BROWSERSTACK_LOGIN_STAGGER_SEC: 20
+      BROWSERSTACK_LOGIN_STAGGER_SEC: 60
       PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
       SMS_CODE: ${{ secrets.SMS_CODE }}
       PIN_CODE: ${{ secrets.PIN_CODE }}

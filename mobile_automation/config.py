@@ -189,7 +189,9 @@ class Settings:
     browserstack_build_name: str = field(default_factory=lambda: _env("BROWSERSTACK_BUILD_NAME", "local-dev"))
     browserstack_webview_enabled: bool = field(default_factory=lambda: _bool_env("BROWSERSTACK_WEBVIEW_ENABLED", False))
     browserstack_login_stagger_sec: int = field(
-        default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "20"))
+        # 20s proved too short: full login takes ~80s, so 3 workers still raced
+        # for the shared test phone's OTP (run refactor-verify-main-qr-20260610).
+        default_factory=lambda: int(_env("BROWSERSTACK_LOGIN_STAGGER_SEC", "60"))
     )
     web_browser: str = field(default_factory=lambda: _env("WEB_BROWSER", "chrome").lower())
     web_headless: bool = field(default_factory=lambda: _bool_env("WEB_HEADLESS", False))
