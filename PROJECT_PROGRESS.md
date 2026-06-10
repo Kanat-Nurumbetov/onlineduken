@@ -725,3 +725,34 @@ Update this file after:
   - `test_smoke_qr_payment_flow[qr-common]`
   - `test_smoke_qr_payment_flow[qr-megapolis]`
   - result: `5 passed`
+
+## Update On 2026-06-10 (Refactor Branch Verification And Login Lock)
+
+- The refactor branch `claude/laughing-mahavira-3d2680` went through real verification before merge:
+  - unit tests: `49 passed` (then `54 passed` after the login-lock tests were added)
+  - full collection: `71 tests`, no import errors after the flows/tests split
+  - the previously uploaded BrowserStack app had expired (30-day retention), so the APK was re-uploaded:
+    - new app id: `bs://628110de9fb881fa60d22391aa793a7c745de327`
+    - stable custom id: `onlineduken-stage`
+- A real branch bug was found and fixed:
+  - both local launchers and the README still installed from the deleted `requirements-ci.txt`
+  - they now use `pip install -e .[ci]`
+- BrowserStack-safe main + QR pack on the branch:
+  - first run with the old 20s stagger failed on the known OTP race (`auth code expired after sms entry`), `2 passed / 1 failed`
+  - the same failed test passed solo (`1 passed in 83s`), proving the login flow itself is healthy on the branch
+  - rerun with `BROWSERSTACK_LOGIN_STAGGER_SEC=60`: `4 passed in 257s` (build `refactor-verify-main-qr-stagger60-20260610`)
+- WebView UI subset run hit the same OTP race from the other side:
+  - a worker retry re-requested SMS while staggered workers were starting, `2 passed / 1 error`
+  - conclusion: the stagger only lowers collision probability; retries still collide
+- Structural fix implemented: cross-process login lock
+  - new `mobile_automation/login_lock.py` (filelock-based) serializes the whole phone/SMS/PIN retry loop across workers
+  - `try_complete_login` now runs under the lock, so all entry points are covered
+  - waiting workers ping their Appium session so BrowserStack does not kill idle sessions (~90s limit)
+  - new env knobs: `LOGIN_LOCK_ENABLED` (default true), `LOGIN_LOCK_TIMEOUT_SEC` (600), `LOGIN_LOCK_PATH`
+  - covered by 5 unit tests
+- Login stagger raised 20 -> 60 in config default and both workflows; with the lock in place it is now a secondary safety net and can be lowered after the next validated cloud run
+- Development workflow agreed with the user:
+  - new WebView tests are developed first in the desktop-browser web suite, then validated once on the local emulator, and only then on BrowserStack before push
+- Still pending before merge:
+  - one green WebView UI subset run on BrowserStack with the login lock active (cloud runs are paused at user request)
+  - long-term: a pool of independent test users, one per worker, remains the proper fix for shared-phone OTP contention
