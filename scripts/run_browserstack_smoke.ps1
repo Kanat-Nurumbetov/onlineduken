@@ -103,8 +103,7 @@ Require-Env "BROWSERSTACK_APP_ANDROID"
 
 Write-Step "Ensuring Python dependencies"
 Invoke-External $pythonCommand.FilePath (Join-Command $pythonCommand @("-m", "pip", "install", "--upgrade", "pip")) -IgnoreExitCode
-Invoke-External $pythonCommand.FilePath (Join-Command $pythonCommand @("-m", "pip", "install", "-r", (Join-Path $ProjectRoot "requirements-ci.txt")))
-Invoke-External $pythonCommand.FilePath (Join-Command $pythonCommand @("-m", "pip", "install", "-e", $ProjectRoot, "--no-deps"))
+Invoke-External $pythonCommand.FilePath (Join-Command $pythonCommand @("-m", "pip", "install", "-e", "$ProjectRoot[ci]"))
 
 if (-not $SkipHealthcheck) {
     Write-Step "Checking test environment availability"

@@ -59,8 +59,7 @@ Important context files in project root:
 2. Install dependencies:
 
 ```bash
-pip install -r requirements-ci.txt
-pip install -e . --no-deps
+pip install -e ".[ci]"
 ```
 
 3. Copy `.env.example` to `.env` and fill values.

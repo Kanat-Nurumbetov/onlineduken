@@ -131,8 +131,7 @@ function Invoke-ExternalCapture([string]$FilePath, [string[]]$Arguments = @(), [
 function Ensure-PythonDependencies([hashtable]$PythonCommand) {
     Write-Step "Ensuring Python dependencies"
     Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "--upgrade", "pip")) -IgnoreExitCode
-    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-r", (Join-Path $ProjectRoot "requirements-ci.txt")))
-    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-e", $ProjectRoot, "--no-deps"))
+    Invoke-External $PythonCommand.FilePath (Join-Command $PythonCommand @("-m", "pip", "install", "-e", "$ProjectRoot[ci]"))
 }
 
 function Resolve-AppiumCli {
