@@ -198,6 +198,14 @@ def pytest_configure_node(node) -> None:
     node.workerinput[LOCAL_WORKER_APPIUM_URL] = local_devices[worker_index].appium_server_url
 
 
+def _markexpr_limits_run_to_web(config: pytest.Config) -> bool:
+    # `web and <anything>` can only select web-marked tests, so requiring
+    # `web` as a top-level conjunct is a sound (conservative) check.
+    markexpr = getattr(config.option, "markexpr", "") or ""
+    conjuncts = {part.strip().strip("()") for part in markexpr.split(" and ")}
+    return "web" in conjuncts
+
+
 def pytest_sessionstart(session: pytest.Session) -> None:
     if hasattr(session.config, "workerinput"):
         return
@@ -212,6 +220,11 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     settings = get_settings()
     if settings.is_browserstack:
+        return
+
+    if _markexpr_limits_run_to_web(session.config):
+        # Browser-only runs never touch Android devices, so the local
+        # device matrix does not constrain them.
         return
 
     local_devices = settings.resolved_local_android_devices
