@@ -788,3 +788,16 @@ Update this file after:
 - This also live-validated refactor-branch internals end to end: flows package, runtime_auth, login lock, OnlineDuken entry
 - Practical daily loop: `run_local_smoke.ps1 -BootstrapOnly` once, then develop against `run_web_suite.ps1` in seconds-long iterations
 - CI note: the app-login bootstrap cannot run on GitHub runners (no emulator); push web smoke still needs the internal login endpoint secrets or a token secret
+
+## Update On 2026-06-10 (Local Two-Emulator Parallel Smoke Green)
+
+- Full local verification pass after the refactor merge, all tiers:
+  - unit: `54 passed`
+  - web suite sequential: `5 passed in 43.01s`
+  - web suite `-n 2`: `5 passed in 27.73s`
+  - full mobile smoke `-n 2` on two emulators: `8 passed, 3 skipped, 0 failed in 21:58`
+- The two-emulator parallel bench (emulator-5554 + Medium_Phone_Parallel on 5556, Appium 4723/4725, LOCAL_ANDROID_DEVICE_MATRIX mapping) was historically "up but unstable for long runs"; this is its first fully green long run
+  - likely contributors: refactor stability work, app-state reuse, APPIUM_NO_RESET changes, and the login lock serializing shared-phone logins
+- The 3 skips are the known intentional ones: invoice payment (INVOICE_REFERENCE not set) and both cart flows (no stable supplier yet)
+- `test_smoke_catalog_has_suppliers` passed in this run as well
+- Guard fix along the way: the local-parallel protection no longer blocks browser-only runs (`-m web -n 2`); mixed expressions still trip it
