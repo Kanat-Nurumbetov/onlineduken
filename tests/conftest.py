@@ -416,9 +416,8 @@ def _prepare_managed_onlineduken_home(manager: ManagedDriverSession, settings: S
 
 
 @pytest.fixture(scope="function")
-def auth_smoke_driver(driver, settings: Settings):
-    enter_onlineduken(driver, settings)
-    return driver
+def auth_smoke_driver(onlineduken_session_manager: ManagedDriverSession, settings: Settings):
+    return _prepare_managed_onlineduken_home(onlineduken_session_manager, settings, "auth_smoke_prepare")
 
 
 @pytest.fixture(scope="function")
@@ -457,41 +456,40 @@ def web_driver(settings: Settings, web_auth_url: str):
             driver.quit()
 
 
-def _module_session_manager(settings: Settings, session_label: str):
-    manager = ManagedDriverSession(settings, session_name=f"OnlineDuken {session_label}")
+@pytest.fixture(scope="session")
+def onlineduken_session_manager(settings: Settings, appium_service):
+    # One mobile session per pytest worker: the phone/SMS/PIN login runs once
+    # when the first test builds the driver, and every OnlineDuken test then
+    # starts from OnlineDuken home re-established between tests. The managed
+    # restart ladder rebuilds the session (with a fresh login) only if it dies.
+    manager = ManagedDriverSession(settings, session_name="OnlineDuken shared smoke")
     try:
         yield manager
     finally:
         manager.close()
 
 
-@pytest.fixture(scope="module")
-def ui_session_manager(settings: Settings, appium_service):
-    yield from _module_session_manager(settings, "UI smoke")
-
-
-@pytest.fixture(scope="module")
-def payments_session_manager(settings: Settings, appium_service):
-    yield from _module_session_manager(settings, "payments smoke")
-
-
 @pytest.fixture(scope="function")
-def ui_smoke_driver(ui_session_manager: ManagedDriverSession, settings: Settings):
-    driver = _prepare_managed_onlineduken_home(ui_session_manager, settings, "ui_smoke_prepare")
+def ui_smoke_driver(onlineduken_session_manager: ManagedDriverSession, settings: Settings):
+    driver = _prepare_managed_onlineduken_home(onlineduken_session_manager, settings, "ui_smoke_prepare")
     yield driver
     with suppress(Exception):
-        if ui_session_manager.active_driver is not None:
-            recover_onlineduken_home(ui_session_manager.active_driver, settings, capture_prefix="ui_smoke_cleanup")
-
-
-@pytest.fixture(scope="function")
-def payments_smoke_driver(payments_session_manager: ManagedDriverSession, settings: Settings):
-    driver = _prepare_managed_onlineduken_home(payments_session_manager, settings, "payments_smoke_prepare")
-    yield driver
-    with suppress(Exception):
-        if payments_session_manager.active_driver is not None:
+        if onlineduken_session_manager.active_driver is not None:
             recover_onlineduken_home(
-                payments_session_manager.active_driver,
+                onlineduken_session_manager.active_driver,
+                settings,
+                capture_prefix="ui_smoke_cleanup",
+            )
+
+
+@pytest.fixture(scope="function")
+def payments_smoke_driver(onlineduken_session_manager: ManagedDriverSession, settings: Settings):
+    driver = _prepare_managed_onlineduken_home(onlineduken_session_manager, settings, "payments_smoke_prepare")
+    yield driver
+    with suppress(Exception):
+        if onlineduken_session_manager.active_driver is not None:
+            recover_onlineduken_home(
+                onlineduken_session_manager.active_driver,
                 settings,
                 capture_prefix="payments_smoke_cleanup",
             )
