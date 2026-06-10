@@ -9,13 +9,27 @@ Hybrid mobile automation project for:
 ## Goals
 
 - keep the project git-ready from day one;
-- run `smoke` tests automatically on pushes;
+- run the web smoke tier automatically on pushes;
 - check test environment availability before running CI smoke;
 - keep all other tests manual-only;
 - support hybrid app automation:
   - native Android/iOS shell
   - WebView inside `OnlineDuken`
 - preserve working context in versioned Markdown files so the project can be resumed without losing history
+
+## Execution Tiers
+
+Agreed development scheme (2026-06-10):
+
+| Tier | What it checks | Where it runs | When |
+| --- | --- | --- | --- |
+| Web suite (`-m web`) | frontend-only changes without mobile specifics | plain Chrome with an injected auth token | main development loop; push CI |
+| Local emulator (`-m smoke`) | business logic: payments, QR, native screens, context switching | local Android emulator + Appium | locally before commit |
+| BrowserStack | cross-platform device checks (Android + iOS) | App Automate | manual only: `mobile-manual` workflow or `run_browserstack_smoke.ps1` |
+
+Practical rule for a new test: develop it in the web suite first; if it
+touches payments or native screens, finish it on the local emulator;
+reach for BrowserStack only when real devices or both platforms matter.
 
 ## Stack
 
@@ -111,10 +125,10 @@ $env:TARGET='local'
 $env:PLATFORM='android'
 $env:ONLINEDUKEN_ENTRY_MODE='token'
 $env:CLIENT_BIN='900423400509'
-py -3.12 -m pytest tests\smoke\test_smoke_suite.py -k "qr_payment_flow" -q -s -ra
+py -3.12 -m pytest tests\smoke\test_qr_payment.py -q -s -ra
 ```
 
-Parallel smoke on BrowserStack:
+Parallel smoke on BrowserStack (manual-only tier):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\run_browserstack_smoke.ps1 -Workers 3 -Allure
@@ -157,7 +171,13 @@ Marker:
 pytest -m web
 ```
 
-Run the full web suite locally:
+Run the full web suite locally (recommended launcher):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\run_web_suite.ps1 -Headless
+```
+
+Or directly through pytest:
 
 ```powershell
 $env:WEB_HEADLESS='true'
@@ -256,8 +276,8 @@ Recommended CI usage:
 - optionally generate `allure-report` in a separate CI step
 
 This fits the current strategy:
-- push -> smoke
-- manual workflow -> regression / custom runs
+- push -> web smoke (frontend tier)
+- manual workflow -> BrowserStack device runs, regression, custom runs
 
 Single platform examples:
 

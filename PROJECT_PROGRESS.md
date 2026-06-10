@@ -756,3 +756,22 @@ Update this file after:
 - Still pending before merge:
   - one green WebView UI subset run on BrowserStack with the login lock active (cloud runs are paused at user request)
   - long-term: a pool of independent test users, one per worker, remains the proper fix for shared-phone OTP contention
+
+## Update On 2026-06-10 (Three-Tier Execution Scheme)
+
+- The execution strategy was restructured into three tiers, agreed with the user:
+  - web suite in a plain browser with an injected auth token -> frontend-only checks, the main development loop, and push CI
+  - local emulator (Appium hybrid) -> business-logic flows: payments, QR, native screens, context switching
+  - BrowserStack -> cross-platform device checks only, manual runs only
+- Implementation:
+  - new launcher `scripts/run_web_suite.ps1` (-Headless, -Allure, -Workers, -KExpression, -SkipInstall); forces `TARGET=local` so mobile/cloud env values cannot leak into a web run
+  - `smoke.yml` renamed to `web-smoke` semantics: push now runs `pytest -m web -n 2` in headless Chrome on the runner instead of BrowserStack App Automate
+  - the `ENABLE_PUSH_SMOKE` kill switch and the healthcheck gate are unchanged
+  - `manual.yml` (mobile-manual) remains the BrowserStack entry point with platform choice and marker expression
+  - README documents the tiers and the practical rule for where a new test starts
+- Verified locally:
+  - launcher run without auth -> `5 skipped, 71 deselected`, clean skip reason about the missing auth URL/token
+- What the push web smoke still needs to turn from skip to green in CI:
+  - either `B2B_OB_AUTH_TOKEN` / `B2B_AUTH_URL` secrets (tokens expire, so this is the weaker option)
+  - or the internal login endpoint secrets (`B2B_INTERNAL_LOGIN_URL` / `B2B_INTERNAL_CLIENT_ID` / `B2B_INTERNAL_CLIENT_SECRET`) for self-refreshing auth
+  - plus `TEST_ENV_HEALTHCHECK_URLS` so the healthcheck gate reflects the real web env
